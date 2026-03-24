@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { CheckCircle2, Circle, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
@@ -27,7 +27,6 @@ const STATUS_STEP_MAP: Record<Status, number> = {
 
 export default function LoadingContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [sessionId, setSessionId] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
@@ -35,9 +34,10 @@ export default function LoadingContent() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const sId = searchParams.get('session_id') || localStorage.getItem('visura_session_id') || '';
+    const params = new URLSearchParams(window.location.search);
+    const sId = params.get('session_id') || localStorage.getItem('visura_session_id') || '';
     setSessionId(sId);
-  }, [searchParams]);
+  }, []);
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const phaseDone = useRef({ parse: false, advise: false });
