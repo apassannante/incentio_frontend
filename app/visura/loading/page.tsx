@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 import LoadingContent from './LoadingContent';
 
+export const dynamic = 'force-dynamic';
+
 export default function VisuraLoadingPage() {
   return (
     <Suspense
