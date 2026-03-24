@@ -29,11 +29,15 @@ export default function LoadingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const sessionId = searchParams.get('session_id') ?? localStorage.getItem('visura_session_id') ?? '';
-
+  const [sessionId, setSessionId] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
   const [status, setStatus] = useState<Status>('uploaded');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const sId = searchParams.get('session_id') || localStorage.getItem('visura_session_id') || '';
+    setSessionId(sId);
+  }, [searchParams]);
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const phaseDone = useRef({ parse: false, advise: false });
