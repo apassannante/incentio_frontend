@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, Circle, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -25,7 +25,7 @@ const STATUS_STEP_MAP: Record<Status, number> = {
   error: -1,
 };
 
-export default function VisuraLoadingPage() {
+function LoadingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -99,7 +99,6 @@ export default function VisuraLoadingPage() {
         }
 
         setCurrentStep(3);
-        // Start polling
         pollingRef.current = setInterval(pollStatus, 2000);
       } catch {
         setError('Errore durante l\'elaborazione. Riprova dall\'inizio.');
@@ -113,7 +112,6 @@ export default function VisuraLoadingPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0F1E] text-white flex flex-col">
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-[#0A0F1E]/90 backdrop-blur border-b border-[#38BDF8]/15 px-6 py-4">
         <div className="max-w-5xl mx-auto">
           <Link href="/" className="text-xl">
@@ -123,7 +121,6 @@ export default function VisuraLoadingPage() {
         </div>
       </header>
 
-      {/* Main */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-16">
         <div className="w-full max-w-md">
           <div className="text-center mb-10">
@@ -136,7 +133,6 @@ export default function VisuraLoadingPage() {
             </p>
           </div>
 
-          {/* Steps */}
           <div className="flex flex-col gap-4">
             {STEPS.map((label, i) => {
               const done = currentStep > i;
@@ -173,7 +169,6 @@ export default function VisuraLoadingPage() {
             })}
           </div>
 
-          {/* Error */}
           {error && (
             <div className="mt-6 flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4">
               <AlertCircle size={18} className="text-red-400 mt-0.5 shrink-0" />
@@ -196,5 +191,13 @@ export default function VisuraLoadingPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function VisuraLoadingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0A0F1E] flex items-center justify-center"><Loader2 size={32} className="text-[#38BDF8] animate-spin" /></div>}>
+      <LoadingContent />
+    </Suspense>
   );
 }
