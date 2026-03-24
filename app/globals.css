@@ -1,26 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;800&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand-dark: #0A0F1E;
+  --color-brand-navy: #0F1F3D;
+  --color-brand-cyan: #38BDF8;
+  --color-background: #0A0F1E;
+  --color-foreground: #FFFFFF;
+  --font-sans: 'Poppins', sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --brand-dark: #0A0F1E;
+  --brand-navy: #0F1F3D;
+  --brand-cyan: #38BDF8;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #0A0F1E;
+  color: #FFFFFF;
+  font-family: 'Poppins', sans-serif;
+}
+
+input, select, textarea {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  color: #FFFFFF;
+  border-radius: 8px;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #38BDF8;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+
+input::placeholder, textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+select option {
+  background-color: #0F1F3D;
+  color: #FFFFFF;
 }
