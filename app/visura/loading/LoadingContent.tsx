@@ -96,7 +96,10 @@ export default function LoadingContent() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sessionId }),
           });
-          if (!adviseRes.ok) throw new Error('Advise failed');
+          if (!adviseRes.ok) {
+            const body = await adviseRes.json().catch(() => ({}));
+            throw new Error(body.error || `Advise failed (${adviseRes.status})`);
+          }
           phaseDone.current.advise = true;
         }
 
