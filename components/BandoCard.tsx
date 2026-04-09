@@ -56,9 +56,11 @@ export default function BandoCard({ match, profileId }: BandoCardProps) {
         setApplyError('');
         try {
             const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            const { authHeaders } = await import('@/lib/api');
+            const headers = await authHeaders();
             const res = await fetch(`${API_BASE}/api/application/save`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({ bandoId: bando.id, profileId }),
             });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);

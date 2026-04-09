@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import ChatBot from '@/components/visura/ChatBot';
+import { fetchAuth } from '@/lib/fetchAuth';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -321,7 +322,7 @@ export default function VisuraResultsPage() {
       } catch { /* fall through */ }
     }
 
-    fetch(`${API_BASE}/api/visura/advise`, {
+    fetchAuth(`${API_BASE}/api/visura/advise`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_id: sessionId }),
@@ -337,7 +338,7 @@ export default function VisuraResultsPage() {
 
   const downloadReport = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/visura/report/${sessionId}`);
+      const res = await fetchAuth(`${API_BASE}/api/visura/report/${sessionId}`);
       if (!res.ok) throw new Error('download fail');
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);

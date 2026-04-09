@@ -55,7 +55,7 @@ const SETTORI_GROUPS = [
 ];
 const SETTORI_FLAT = SETTORI_GROUPS.flatMap(g => g.voci);
 const DIMENSIONI = ['micro', 'piccola', 'media', 'grande'] as const;
-const PROVINCE_LOM = ['VA', 'MI', 'CO', 'MB', 'LO', 'BG', 'BS', 'CR', 'LC', 'LO', 'MN', 'PV', 'SO', 'altro'];
+const PROVINCE_LOM = ['VA', 'MI', 'CO', 'MB', 'LO', 'BG', 'BS', 'CR', 'LC', 'MN', 'PV', 'SO', 'altro'];
 const MODULI_INFO = [
   { id: 'tech', label: 'Tech & Digitale', desc: 'Industria 4.0/5.0, AI, automazione, software' },
   { id: 'green', label: 'Green & Energia', desc: 'Efficienza energetica, rinnovabili, economia circolare' },
@@ -142,9 +142,11 @@ export default function OnboardingPage() {
       }
 
       const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const { authHeaders } = await import('@/lib/api');
+      const headers = await authHeaders();
       const matcherRes = await fetch(`${API_BASE}/api/profile`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           id: user.id,  // usa Supabase user.id come profileId → dashboard trova le candidature
           settore_ateco: form.settore,

@@ -31,26 +31,41 @@ export default function AuthPage() {
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        // Check if user has a profile in Supabase
-        const { data: profile } = await supabase
+        // Check if user has a profile in Supabase (by id or user_id)
+        const { data: profileById } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', data.user.id)
+          .single();
+        const { data: profileByUserId } = !profileById ? await supabase
           .from('profiles')
           .select('id')
           .eq('user_id', data.user.id)
-          .single();
+          .single() : { data: profileById };
+
+        const profile = profileById || profileByUserId;
         if (!profile) {
-          router.push('/onboarding');
+          // Nessun profilo → visura come primo step
+          router.push('/visura?nuovo=true');
           return;
         }
-        // Verify profile is also synced in backend (profiles.json). Only redirect to
-        // onboarding on explicit 404 — if backend is unreachable, proceed normally.
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-        const backendCheck = await fetch(`${API_BASE}/api/bandi/${data.user.id}`).catch(() => null);
-        if (backendCheck && backendCheck.status === 404) {
-          // Profile in Supabase but not in backend — re-sync via onboarding
-          router.push('/onboarding');
+
+        // Check se ha già una visura caricata
+        const { data: visura } = await supabase
+          .from('visura_sessions')
+          .select('id')
+          .eq('user_id', data.user.id)
+          .eq('status', 'complete')
+          .limit(1)
+          .single();
+
+        if (!visura) {
+          // Ha profilo ma nessuna visura completata → visura come primo step
+          router.push('/visura?nuovo=true');
           return;
         }
-        router.push(`/risultati?id=${data.user.id}`);
+
+        router.push(`/risultati?id=${profile.id}`);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Errore di autenticazione');

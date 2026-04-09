@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Bot, Send, X } from 'lucide-react';
+import { fetchAuth } from '@/lib/fetchAuth';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -49,7 +50,7 @@ export default function ChatBot({ sessionId }: ChatBotProps) {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/api/visura/chat`, {
+      const res = await fetchAuth(`${API_BASE}/api/visura/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId, messages: newMessages }),

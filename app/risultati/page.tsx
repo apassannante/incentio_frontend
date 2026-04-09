@@ -6,12 +6,13 @@ import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, AlertTriangle } from 'lucide-react';
 import { getBandiCompatibili } from '@/lib/api';
 import type { MatchResult } from '@/lib/types';
 import BandoCard from '@/components/BandoCard';
 import FontiAttive from '@/components/FontiAttive';
 import LogoutButton from '@/components/LogoutButton';
+import { createClient } from '@/lib/supabase/client';
 
 function RisultatiContent() {
     const searchParams = useSearchParams();
@@ -21,6 +22,7 @@ function RisultatiContent() {
     const [results, setResults] = useState<MatchResult[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [hasVisura, setHasVisura] = useState(true);
 
     useEffect(() => {
         if (!profileId) {
@@ -31,6 +33,18 @@ function RisultatiContent() {
             .then((data) => setResults(Array.isArray(data) ? data : []))
             .catch(() => setError('Errore nel caricamento dei bandi. Riprova.'))
             .finally(() => setLoading(false));
+
+        // Check se ha una visura completata
+        const supabase = createClient();
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            if (!user) return;
+            supabase.from('visura_sessions')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('status', 'complete')
+                .limit(1)
+                .then(({ data }) => setHasVisura((data?.length ?? 0) > 0));
+        });
     }, [profileId, router]);
 
     return (
@@ -49,6 +63,18 @@ function RisultatiContent() {
                     <Link href="/profilo" className="text-sm text-[#38BDF8] font-semibold hover:underline">
                         ← Torna al profilo
                     </Link>
+                </div>
+            )}
+
+            {!loading && !hasVisura && (
+                <div className="mb-6 flex items-start gap-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
+                    <AlertTriangle size={20} className="text-yellow-400 mt-0.5 shrink-0" />
+                    <div>
+                        <p className="text-yellow-300 text-sm font-semibold">Risultati limitati</p>
+                        <p className="text-yellow-400/80 text-sm mt-0.5">
+                            Senza visura camerale i risultati sono limitati. <Link href="/visura" className="underline hover:text-yellow-300">Caricala</Link> per sbloccare il matching completo.
+                        </p>
+                    </div>
                 </div>
             )}
 

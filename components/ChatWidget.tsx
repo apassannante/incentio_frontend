@@ -75,9 +75,11 @@ export default function ChatWidget() {
             abortRef.current = controller;
 
             try {
+                const { authHeaders } = await import('@/lib/api');
+                const headers = await authHeaders();
                 const res = await fetch(`${API_BASE}/api/chat`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify({
                         message: text.trim(),
                         profileId,

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import ChatBot from '@/components/visura/ChatBot';
+import { fetchAuth } from '@/lib/fetchAuth';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -121,10 +122,10 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
     const lines = [
       `CHECKLIST DOCUMENTI — ${bando.titolo}\n`,
       '✅ Documenti già in tuo possesso:',
-      ...bando.documenti_necessari.map((d) => `  - ${d}`),
+      ...(bando.documenti_necessari || []).map((d) => `  - ${d}`),
       '',
       '⚠️ Documenti da raccogliere:',
-      ...bando.documenti_da_raccogliere.map((d) => `  - ${d}`),
+      ...(bando.documenti_da_raccogliere || []).map((d) => `  - ${d}`),
     ].join('\n');
     const blob = new Blob([lines], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -184,8 +185,8 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
                   <div className="rounded-xl bg-green-500/5 border border-green-500/20 p-4">
                     <p className="text-green-400 text-xs font-bold uppercase tracking-wider mb-3">Hai già ✓</p>
                     <ul className="space-y-1.5">
-                      {bando.documenti_necessari.length === 0 && <li className="text-white/30 text-sm">—</li>}
-                      {bando.documenti_necessari.map((d, i) => (
+                      {(bando.documenti_necessari?.length ?? 0) === 0 && <li className="text-white/30 text-sm">—</li>}
+                      {(bando.documenti_necessari || []).map((d, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-white/80">
                           <CheckCircle2 size={14} className="text-green-400 mt-0.5 shrink-0" />{d}
                         </li>
@@ -195,8 +196,8 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
                   <div className="rounded-xl bg-yellow-500/5 border border-yellow-500/20 p-4">
                     <p className="text-yellow-400 text-xs font-bold uppercase tracking-wider mb-3">Da raccogliere ⚠</p>
                     <ul className="space-y-1.5">
-                      {bando.documenti_da_raccogliere.length === 0 && <li className="text-white/30 text-sm">—</li>}
-                      {bando.documenti_da_raccogliere.map((d, i) => (
+                      {(bando.documenti_da_raccogliere?.length ?? 0) === 0 && <li className="text-white/30 text-sm">—</li>}
+                      {(bando.documenti_da_raccogliere || []).map((d, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-white/80">
                           <AlertTriangle size={14} className="text-yellow-400 mt-0.5 shrink-0" />{d}
                         </li>
@@ -233,8 +234,8 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
 
             {activeTab === 'FAQ' && (
               <div className="space-y-3">
-                {bando.faq.length === 0 && <p className="text-white/30 text-sm">Nessuna FAQ disponibile.</p>}
-                {bando.faq.map((f, i) => (
+                {(bando.faq?.length ?? 0) === 0 && <p className="text-white/30 text-sm">Nessuna FAQ disponibile.</p>}
+                {(bando.faq || []).map((f, i) => (
                   <Accordion key={i} title={f.domanda}>
                     <p className="text-white/70 text-sm leading-relaxed pt-1">{f.risposta}</p>
                   </Accordion>
@@ -244,8 +245,8 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
 
             {activeTab === 'Azioni' && (
               <ul className="space-y-3">
-                {bando.azioni_preparatorie.length === 0 && <li className="text-white/30 text-sm">Nessuna azione.</li>}
-                {bando.azioni_preparatorie.map((a, i) => (
+                {(bando.azioni_preparatorie?.length ?? 0) === 0 && <li className="text-white/30 text-sm">Nessuna azione.</li>}
+                {(bando.azioni_preparatorie || []).map((a, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <input type="checkbox" id={`${bando.id}-action-${i}`}
                       checked={!!checked[a]} onChange={() => toggleAction(a)}
@@ -294,13 +295,24 @@ function UploadPhase({ onSuccess, isNew }: { onSuccess: (sessionId: string) => v
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) return;
     setError(''); setUploading(true); setProgress(0);
+
+    // Ottieni token JWT per auth
+    let token: string | null = null;
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const sb = createClient();
+      const { data: { session } } = await sb.auth.getSession();
+      token = session?.access_token || null;
+    } catch { /* prosegue senza auth */ }
+
     const fd = new FormData();
     fd.append('visura', file);
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${API_BASE}/api/visura/upload`);
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
     };
@@ -420,6 +432,12 @@ function UploadPhase({ onSuccess, isNew }: { onSuccess: (sessionId: string) => v
         <p className="text-center text-xs text-white/25 mt-4">
           I dati vengono elaborati in modo sicuro e non condivisi con terze parti.
         </p>
+
+        {isNew && (
+          <a href="/onboarding" className="block text-center text-xs text-white/40 hover:text-white/60 mt-3 underline underline-offset-2 transition-colors">
+            Continua senza visura →
+          </a>
+        )}
       </div>
     </div>
   );
@@ -440,7 +458,7 @@ function LoadingPhase({ sessionId, onComplete }: { sessionId: string; onComplete
   useEffect(() => {
     const poll = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/visura/status/${sessionId}`);
+        const res = await fetchAuth(`${API_BASE}/api/visura/session/${sessionId}`);
         if (!res.ok) throw new Error();
         const data: { status: Status } = await res.json();
         const step = STATUS_STEP[data.status];
@@ -451,7 +469,7 @@ function LoadingPhase({ sessionId, onComplete }: { sessionId: string; onComplete
           const cacheKey = `incentio_advisory_${sessionId}`;
           const cached = localStorage.getItem(cacheKey);
           if (cached) { onComplete(JSON.parse(cached)); return; }
-          const rpt = await fetch(`${API_BASE}/api/visura/advise`, {
+          const rpt = await fetchAuth(`${API_BASE}/api/visura/advise`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sessionId }),
@@ -471,7 +489,7 @@ function LoadingPhase({ sessionId, onComplete }: { sessionId: string; onComplete
       try {
         if (!phaseDone.current.parse) {
           setCurrentStep(1);
-          const r = await fetch(`${API_BASE}/api/visura/parse`, {
+          const r = await fetchAuth(`${API_BASE}/api/visura/parse`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sessionId }),
           });
@@ -480,7 +498,7 @@ function LoadingPhase({ sessionId, onComplete }: { sessionId: string; onComplete
         }
         if (!phaseDone.current.advise) {
           setCurrentStep(2);
-          const r = await fetch(`${API_BASE}/api/visura/advise`, {
+          const r = await fetchAuth(`${API_BASE}/api/visura/advise`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sessionId }),
           });
@@ -550,7 +568,7 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
 
   const downloadReport = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/visura/report/${sessionId}`);
+      const res = await fetchAuth(`${API_BASE}/api/visura/report/${sessionId}`);
       if (!res.ok) throw new Error();
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -584,13 +602,13 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
                 {(s.comune ?? s.provincia) && <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-white/60 font-medium">{[s.comune, s.provincia].filter(Boolean).join(', ')}</span>}
               </div>
               <p className="text-white/60 text-sm leading-relaxed mt-3">{s.descrizione}</p>
-              {(s.punti_di_forza.length > 0 || s.criticita.length > 0) && (
+              {((s.punti_di_forza?.length ?? 0) > 0 || (s.criticita?.length ?? 0) > 0) && (
                 <div className="grid sm:grid-cols-2 gap-4 mt-4">
-                  {s.punti_di_forza.length > 0 && (
+                  {(s.punti_di_forza?.length ?? 0) > 0 && (
                     <div>
                       <p className="text-green-400 text-xs font-bold uppercase tracking-wider mb-2">Punti di forza</p>
                       <ul className="space-y-1">
-                        {s.punti_di_forza.map((p, i) => (
+                        {(s.punti_di_forza || []).map((p, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-white/70">
                             <CheckCircle2 size={13} className="text-green-400 mt-0.5 shrink-0" />{p}
                           </li>
@@ -598,11 +616,11 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
                       </ul>
                     </div>
                   )}
-                  {s.criticita.length > 0 && (
+                  {(s.criticita?.length ?? 0) > 0 && (
                     <div>
                       <p className="text-yellow-400 text-xs font-bold uppercase tracking-wider mb-2">Criticità</p>
                       <ul className="space-y-1">
-                        {s.criticita.map((c, i) => (
+                        {(s.criticita || []).map((c, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-white/70">
                             <AlertTriangle size={13} className="text-yellow-400 mt-0.5 shrink-0" />{c}
                           </li>
@@ -631,8 +649,8 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
             </div>
           ) : (
             <div className="space-y-5">
-              {report.bandi_prioritari.slice(0, 5).map((bando) => (
-                <BandoCard key={bando.id} bando={bando} sessionId={sessionId} />
+              {(report.bandi_prioritari || []).slice(0, 5).map((bando, idx) => (
+                <BandoCard key={bando.id || idx} bando={bando} sessionId={sessionId} />
               ))}
             </div>
           )}
@@ -663,9 +681,9 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
                       <span className="text-green-400 font-bold text-lg whitespace-nowrap shrink-0">{eur(a.valore_potenziale_eur)}</span>
                     </div>
                     <p className="text-white/60 text-sm mb-3 leading-relaxed">{a.motivazione}</p>
-                    {a.bandi_sbloccati.length > 0 && (
+                    {a.bandi_sbloccati?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-3">
-                        {a.bandi_sbloccati.map((b, j) => (
+                        {(a.bandi_sbloccati || []).map((b, j) => (
                           <span key={j} className="text-xs px-2 py-0.5 rounded-full bg-white/8 border border-white/10 text-white/60">{b}</span>
                         ))}
                       </div>
@@ -700,9 +718,9 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
                       <span className="text-green-400 font-bold text-base whitespace-nowrap shrink-0">{eur(str.valore_potenziale_eur)}</span>
                     </div>
                     <p className="text-white/60 text-sm mb-3 leading-relaxed">{str.descrizione}</p>
-                    {str.bandi_sbloccati.length > 0 && (
+                    {str.bandi_sbloccati?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
-                        {str.bandi_sbloccati.map((b, j) => (
+                        {(str.bandi_sbloccati || []).map((b, j) => (
                           <span key={j} className="text-xs px-2 py-0.5 rounded-full bg-white/8 border border-white/10 text-white/60">{b}</span>
                         ))}
                       </div>

@@ -1,18 +1,38 @@
 import { ProfiloAzienda, MatchResult, Bando } from './types';
+import { createClient } from './supabase/client';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+/**
+ * Restituisce gli headers con il token JWT Supabase se l'utente è autenticato.
+ */
+export async function authHeaders(): Promise<Record<string, string>> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    try {
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+            headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+    } catch {
+        // Se non riesce a ottenere la sessione, prosegue senza auth
+    }
+    return headers;
+}
+
 export async function salvaProfilo(profilo: ProfiloAzienda): Promise<{ id: string }> {
+    const headers = await authHeaders();
     const res = await fetch(`${API_BASE}/api/profile`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(profilo),
     });
     return res.json();
 }
 
 export async function getBandiCompatibili(profileId: string): Promise<MatchResult[]> {
-    const res = await fetch(`${API_BASE}/api/bandi/${profileId}`);
+    const headers = await authHeaders();
+    const res = await fetch(`${API_BASE}/api/bandi/${profileId}`, { headers });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
@@ -26,7 +46,8 @@ export async function getSchedaBando(
     template_progetto: string;
     giorni_preparazione: number;
 }> {
-    const res = await fetch(`${API_BASE}/api/bando/${bandoId}/scheda?profileId=${profileId}`);
+    const headers = await authHeaders();
+    const res = await fetch(`${API_BASE}/api/bando/${bandoId}/scheda?profileId=${profileId}`, { headers });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
@@ -45,9 +66,10 @@ export async function startApplication(
     bandoId: string,
     profileId: string
 ): Promise<{ id?: string; gap_analysis: GapAnalysis }> {
+    const headers = await authHeaders();
     const res = await fetch(`${API_BASE}/api/application/start`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ bandoId, profileId }),
     });
     
@@ -99,7 +121,8 @@ export interface ApplicationData {
 }
 
 export async function getApplicationData(applicationId: string): Promise<ApplicationData> {
-    const res = await fetch(`${API_BASE}/api/application/${applicationId}`);
+    const headers = await authHeaders();
+    const res = await fetch(`${API_BASE}/api/application/${applicationId}`, { headers });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!data) throw new Error('Invalid response');

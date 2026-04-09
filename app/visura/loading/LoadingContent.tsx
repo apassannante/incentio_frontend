@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, Circle, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { fetchAuth } from '@/lib/fetchAuth';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -49,7 +50,7 @@ export default function LoadingContent() {
   const pollStatus = async () => {
     if (!sessionId) return;
     try {
-      const res = await fetch(`${API_BASE}/api/visura/status/${sessionId}`);
+      const res = await fetchAuth(`${API_BASE}/api/visura/session/${sessionId}`);
       if (!res.ok) throw new Error('Status fetch failed');
       const data: { status: Status } = await res.json();
       setStatus(data.status);
@@ -80,7 +81,7 @@ export default function LoadingContent() {
       try {
         if (!phaseDone.current.parse) {
           setCurrentStep(1);
-          const parseRes = await fetch(`${API_BASE}/api/visura/parse`, {
+          const parseRes = await fetchAuth(`${API_BASE}/api/visura/parse`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sessionId }),
@@ -91,7 +92,7 @@ export default function LoadingContent() {
 
         if (!phaseDone.current.advise) {
           setCurrentStep(2);
-          const adviseRes = await fetch(`${API_BASE}/api/visura/advise`, {
+          const adviseRes = await fetchAuth(`${API_BASE}/api/visura/advise`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sessionId }),
