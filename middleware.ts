@@ -23,14 +23,10 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Protect /onboarding — must be logged in
-  if (!user && request.nextUrl.pathname.startsWith('/onboarding')) {
-    return NextResponse.redirect(new URL('/auth', request.url));
-  }
-
+  // Auth disabilitato: nessun redirect obbligatorio
   return supabaseResponse;
 }
 
 export const config = {
-  matcher: ['/onboarding/:path*'],
+  matcher: [],
 };

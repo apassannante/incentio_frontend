@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { FolderOpen, Plus, ChevronRight, Clock, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import Link from 'next/link';
+import { getDemoProfileId } from '@/lib/demoProfile';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
 type Milestone = { id: string; nome: string; status: string; data_scadenza: string | null };
 type Project = {
@@ -32,35 +31,31 @@ const MILESTONE_STATUS: Record<string, string> = {
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [token, setToken] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showNew, setShowNew] = useState(false);
   const [newForm, setNewForm] = useState({ nome: '', descrizione: '', importo_richiesto: '', data_fine: '' });
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      const session = data.session;
-      if (!session) { setLoading(false); return; }
-      setToken(session.access_token);
-      const pid = localStorage.getItem('incentio_profile_id');
-      if (pid) { setProfileId(pid); loadProjects(pid, session.access_token); }
-      else setLoading(false);
-    });
+    const pid = getDemoProfileId();
+    setProfileId(pid);
+    loadProjects(pid);
   }, []);
 
-  async function loadProjects(pid: string, tok: string) {
+  async function loadProjects(pid: string) {
     setLoading(true);
-    const r = await fetch(`${API}/api/consulting/projects/${pid}`, { headers: { Authorization: `Bearer ${tok}` } });
-    if (r.ok) setProjects(await r.json());
+    try {
+      const r = await fetch(`${API}/api/consulting/projects/${pid}`);
+      if (r.ok) setProjects(await r.json());
+    } catch { /* silent */ }
     setLoading(false);
   }
 
   async function createProject() {
-    if (!profileId || !token || !newForm.nome) return;
+    if (!profileId || !newForm.nome) return;
     const r = await fetch(`${API}/api/consulting/projects`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         profileId,
         nome: newForm.nome,
@@ -72,7 +67,7 @@ export default function ProjectsPage() {
     if (r.ok) {
       setShowNew(false);
       setNewForm({ nome: '', descrizione: '', importo_richiesto: '', data_fine: '' });
-      loadProjects(profileId, token);
+      loadProjects(profileId);
     }
   }
 

@@ -52,8 +52,8 @@ interface AdvisoryReport {
 
 // ── Helpers ────────────────────────────────────────────────────────────── //
 
-const eur = (n: number) =>
-  n.toLocaleString('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+const eur = (n: number | null | undefined) =>
+  (n ?? 0).toLocaleString('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 
 const dateIt = (s: string) => {
   try { return new Date(s).toLocaleDateString('it-IT'); } catch { return s; }
@@ -134,6 +134,37 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
     URL.revokeObjectURL(url);
   };
 
+  const [creating, setCreating] = useState(false);
+  const creaCandidatura = async (b: Bando) => {
+    setCreating(true);
+    try {
+      const { getDemoProfileId } = await import('@/lib/demoProfile');
+      const profileId = getDemoProfileId();
+
+      // Genera template completo via /api/templates/genera
+      const tplRes = await fetch(`${API_BASE}/api/templates/genera`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bando_id: b.id,
+          profilo: { id: profileId, ragione_sociale: 'Azienda', settore_ateco: '' },
+        }),
+      });
+
+      if (!tplRes.ok) throw new Error('template fail');
+      const tplData = await tplRes.json();
+
+      // Salva candidatura
+      const candidaturaUrl = `/application/${b.id}?profileId=${profileId}&template=${encodeURIComponent(JSON.stringify(tplData.template).slice(0, 500))}`;
+      window.location.href = candidaturaUrl;
+    } catch {
+      alert('Errore nella generazione della candidatura. Riprova.');
+    } finally {
+      setCreating(false);
+    }
+  };
+  void creating;
+
   return (
     <div className="rounded-xl border border-white/10 bg-[#0F1F3D]/60 overflow-hidden">
       <div className="p-5">
@@ -205,10 +236,16 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
                     </ul>
                   </div>
                 </div>
-                <button onClick={downloadChecklist}
-                  className="text-sm font-semibold px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-white/70 hover:text-white transition-all flex items-center gap-2">
-                  <Download size={14} /> Genera checklist
-                </button>
+                <div className="flex items-center gap-2 mt-3">
+                  <button onClick={downloadChecklist}
+                    className="text-sm font-semibold px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-white/70 hover:text-white transition-all flex items-center gap-2">
+                    <Download size={14} /> Genera checklist
+                  </button>
+                  <button onClick={() => creaCandidatura(bando)}
+                    className="text-sm font-bold px-4 py-2 rounded-lg bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-[#0A0F1E] transition-all flex items-center gap-2">
+                    <FileText size={14} /> Crea candidatura completa
+                  </button>
+                </div>
               </div>
             )}
 

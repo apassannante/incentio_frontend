@@ -47,7 +47,7 @@ export default function HomePage() {
             <span className="font-extrabold text-white">Incent</span><span className="font-extrabold text-[#38BDF8]">io</span>
           </span>
           <Link
-            href="/auth"
+            href="/visura?nuovo=true"
             className="hidden sm:inline-flex items-center gap-1.5 bg-[#38BDF8] text-[#0A0F1E] text-sm font-bold px-4 py-2 rounded-lg hover:opacity-90 transition-all"
           >
             Inizia gratis <ArrowRight size={14} />
@@ -78,7 +78,7 @@ export default function HomePage() {
             </div>
 
             <Link
-              href="/auth"
+              href="/visura?nuovo=true"
               className="inline-flex items-center gap-2 bg-[#38BDF8] text-[#0A0F1E] text-lg font-bold px-8 py-4 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-[#38BDF8]/20"
             >
               Scopri i bandi per la tua azienda
@@ -136,7 +136,7 @@ export default function HomePage() {
               ))}
             </div>
             <Link
-              href="/auth"
+              href="/visura?nuovo=true"
               className="inline-flex items-center gap-2 mt-12 bg-[#38BDF8] text-[#0A0F1E] font-bold px-6 py-3 rounded-lg hover:opacity-90 transition-all"
             >
               Inizia ora — è gratis <ArrowRight size={16} />

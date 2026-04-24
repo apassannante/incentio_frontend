@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { CheckCircle, Clock, AlertCircle, Plus, FileText, Euro, ChevronLeft, Brain } from 'lucide-react';
 import Link from 'next/link';
+import { getDemoProfileId } from '@/lib/demoProfile';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
 type Milestone = { id: string; nome: string; descrizione: string | null; status: string; data_scadenza: string | null };
 type RendicontazioneItem = {
@@ -38,7 +37,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   const [project, setProject] = useState<Project | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [token, setToken] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'rendicontazione' | 'documenti'>('overview');
   const [loading, setLoading] = useState(true);
@@ -48,34 +46,33 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [addingRend, setAddingRend] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      const session = data.session;
-      if (!session) return;
-      setToken(session.access_token);
-      const pid = localStorage.getItem('incentio_profile_id');
-      if (pid) setProfileId(pid);
-      loadProject(session.access_token);
-      loadDocuments(session.access_token, pid || '');
-    });
+    const pid = getDemoProfileId();
+    setProfileId(pid);
+    loadProject();
+    loadDocuments(pid);
   }, [id]);
 
-  async function loadProject(tok: string) {
+  async function loadProject() {
     setLoading(true);
-    const r = await fetch(`${API}/api/consulting/project/${id}`, { headers: { Authorization: `Bearer ${tok}` } });
-    if (r.ok) setProject(await r.json());
+    try {
+      const r = await fetch(`${API}/api/consulting/project/${id}`);
+      if (r.ok) setProject(await r.json());
+    } catch { /* silent */ }
     setLoading(false);
   }
 
-  async function loadDocuments(tok: string, pid: string) {
+  async function loadDocuments(pid: string) {
     if (!pid) return;
-    const r = await fetch(`${API}/api/consulting/documents/${pid}?projectId=${id}`, { headers: { Authorization: `Bearer ${tok}` } });
-    if (r.ok) setDocuments(await r.json());
+    try {
+      const r = await fetch(`${API}/api/consulting/documents/${pid}?projectId=${id}`);
+      if (r.ok) setDocuments(await r.json());
+    } catch { /* silent */ }
   }
 
   async function updateMilestoneStatus(milestoneId: string, status: string) {
     await fetch(`${API}/api/consulting/milestone/${milestoneId}`, {
       method: 'PATCH',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
     setProject(p => p ? { ...p, project_milestones: p.project_milestones.map(m => m.id === milestoneId ? { ...m, status } : m) } : p);
@@ -84,7 +81,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   async function updateProjectStatus(status: string) {
     await fetch(`${API}/api/consulting/project/${id}`, {
       method: 'PATCH',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
     setProject(p => p ? { ...p, status } : p);
@@ -95,11 +92,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     setGeneratingDoc(true);
     const r = await fetch(`${API}/api/consulting/documents/${profileId}`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...genDoc, project_id: id }),
     });
-    if (r.ok) {
-      loadDocuments(token!, profileId);
+    if (r.ok && profileId) {
+      loadDocuments(profileId);
       setGenDoc({ tipo: 'business_plan', titolo: '', istruzioni: '' });
     }
     setGeneratingDoc(false);
@@ -110,11 +107,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     setAddingRend(true);
     const r = await fetch(`${API}/api/consulting/rendicontazione/${id}`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...newRend, importo: newRend.importo ? Number(newRend.importo) : undefined }),
     });
     if (r.ok) {
-      loadProject(token!);
+      loadProject();
       setNewRend({ tipo: 'spesa', titolo: '', importo: '', data: '', fornitore: '', categoria: '', descrizione: '' });
     }
     setAddingRend(false);

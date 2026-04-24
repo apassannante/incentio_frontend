@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, AlertCircle, FileText, ArrowLeft } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { ArrowRight, AlertCircle, FileText, ArrowLeft, Plus } from 'lucide-react';
+import { getDemoProfileId } from '@/lib/demoProfile';
 
 import ApplicationCard, { Application, SkeletonCard } from '@/components/ApplicationCard';
-import LogoutButton from '@/components/LogoutButton';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
@@ -21,23 +22,43 @@ export default function CandidaturePage() {
   useEffect(() => {
     async function load() {
       try {
-        const supabase = createClient();
-        const { data: { user }, error: authErr } = await supabase.auth.getUser();
-        if (authErr || !user) {
-          setError('Devi essere autenticato per vedere le candidature.');
-          setLoading(false);
-          return;
+        const profileId = getDemoProfileId();
+        setUserId(profileId);
+
+        // Recupera sia applications che candidature dal backend
+        const [appsRes, candRes] = await Promise.all([
+          fetch(`${API_BASE}/api/application?profileId=${profileId}`).catch(() => null),
+          fetch(`${API_BASE}/api/candidature/${profileId}`).catch(() => null),
+        ]);
+
+        const apps: Application[] = [];
+
+        if (appsRes?.ok) {
+          const data = await appsRes.json();
+          if (Array.isArray(data)) apps.push(...(data as Application[]));
         }
-        setUserId(user.id);
 
-        const { data, error: dbErr } = await supabase
-          .from('applications')
-          .select('*')
-          .eq('profile_id', user.id)
-          .order('created_at', { ascending: false });
+        if (candRes?.ok) {
+          const data = await candRes.json();
+          if (Array.isArray(data)) {
+            // Mappa candidature → Application shape per visualizzazione
+            data.forEach((c: { id: string; bando_id: string; stato: string; score_matching?: number; created_at: string; bandi?: { titolo?: string; scadenza?: string; importo_max_euro?: number } }) => {
+              apps.push({
+                id: c.id,
+                bando_id: c.bando_id,
+                profile_id: profileId,
+                stato: c.stato,
+                created_at: c.created_at,
+                gap_analysis: null,
+                bando_titolo: c.bandi?.titolo ?? 'Candidatura',
+                bando_scadenza: c.bandi?.scadenza ?? null,
+                bando_importo_max_euro: c.bandi?.importo_max_euro ?? null,
+              } as Application);
+            });
+          }
+        }
 
-        if (dbErr) throw dbErr;
-        setApplications((data as Application[]) ?? []);
+        setApplications(apps);
       } catch (e) {
         console.error(e);
         setError('Errore nel caricamento delle candidature.');
@@ -70,10 +91,12 @@ export default function CandidaturePage() {
             <Link href="/candidature" className="text-[#38BDF8] font-semibold border-b-2 border-[#38BDF8] pb-0.5">
               Candidature
             </Link>
+            <Link href="/progetti/nuovo" className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-emerald-400 border border-emerald-400/40 rounded-lg hover:border-emerald-400 hover:bg-emerald-400/10 transition-all">
+              <Plus size={14} /> Crea progetto
+            </Link>
             <button onClick={() => router.push('/visura')} className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-cyan-400 border border-cyan-400/40 rounded-lg hover:border-cyan-400 hover:bg-cyan-400/10 transition-all">
               📄 Analizza con visura
             </button>
-            <LogoutButton />
           </nav>
         </div>
       </header>
@@ -102,7 +125,7 @@ export default function CandidaturePage() {
           <div className="flex flex-col items-center gap-3 py-24 text-center">
             <AlertCircle size={36} className="text-red-400" />
             <p className="text-white/60">{error}</p>
-            <Link href="/auth" className="text-sm text-[#38BDF8] font-semibold hover:underline">
+            <Link href="/visura?nuovo=true" className="text-sm text-[#38BDF8] font-semibold hover:underline">
               Accedi
             </Link>
           </div>
