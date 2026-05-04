@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import ChatBot from '@/components/visura/ChatBot';
-import { fetchAuth } from '@/lib/fetchAuth';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -19,13 +18,27 @@ type Phase = 'upload' | 'loading' | 'results';
 type Status = 'uploaded' | 'parsing' | 'parsed' | 'advising' | 'complete' | 'error';
 
 interface FAQ { domanda: string; risposta: string; }
+interface PreReqRendicontazione {
+  bonifico_parlante_richiesto?: boolean;
+  time_sheet_personale?: boolean;
+  soglia_preventivi_multipli_eur?: number | null;
+  tetto_spese_personale_pct?: number | null;
+  tetto_spese_attrezzature_pct?: number | null;
+  anni_conservazione_documenti?: number;
+  audit_ente_prevedibile?: boolean;
+  note_critiche?: string;
+}
 interface Bando {
   id: string; titolo: string; ente_erogatore: string;
-  importo_max_eur: number; scadenza: string; score_compatibilita: number;
+  importo_max_eur: number | null;
+  importo_max_euro?: number | null; // alias backend (con la "o")
+  percentuale_fondo_perduto?: number | null;
+  scadenza: string; score_compatibilita: number;
   motivazione: string; difficolta: string; scadenza_urgenza: 'ALTA' | 'MEDIA' | 'BASSA';
   documenti_necessari: string[]; documenti_da_raccogliere: string[];
   requisiti_mancanti: string[]; azioni_preparatorie: string[];
   timeline_candidatura_giorni: number; faq: FAQ[];
+  pre_requisiti_rendicontazione?: PreReqRendicontazione;
 }
 interface NuovoAteco {
   codice: string; descrizione: string; motivazione: string;
@@ -35,6 +48,18 @@ interface NuovoAteco {
 interface AltraStrategia {
   tipo: string; descrizione: string;
   bandi_sbloccati: string[]; valore_potenziale_eur: number;
+}
+interface MatchedBando {
+  id: string;
+  titolo?: string | null;
+  ente_erogatore?: string | null;
+  importo_max_euro?: number | null;
+  percentuale_fondo_perduto?: number | null;
+  scadenza?: string | null;
+  tipo_bando?: string | null;
+  url_originale?: string | null;
+  sintesi_100_parole?: string | null;
+  compatibility_score?: number | null;
 }
 interface AdvisoryReport {
   sintesi_azienda: {
@@ -48,14 +73,19 @@ interface AdvisoryReport {
   piano_azione: { immediato_30gg: string[]; breve_termine_90gg: string[]; medio_termine_6mesi: string[]; };
   stima_valore_totale_eur: number;
   nota_disclaimer: string;
+  // Aggiunto: lista completa dei bandi compatibili (anche oltre i 10 analizzati in profondità)
+  matched_bandi_full?: MatchedBando[];
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────── //
 
-const eur = (n: number | null | undefined) =>
-  (n ?? 0).toLocaleString('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+const eur = (n: number | null | undefined) => {
+  if (n == null || Number.isNaN(Number(n))) return 'N/D';
+  return Number(n).toLocaleString('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+};
 
-const dateIt = (s: string) => {
+const dateIt = (s: string | null | undefined) => {
+  if (!s) return 'N/D';
   try { return new Date(s).toLocaleDateString('it-IT'); } catch { return s; }
 };
 
@@ -100,8 +130,85 @@ function Accordion({ title, children, defaultOpen = false }: { title: string; ch
   );
 }
 
-const TABS = ['Documenti', 'Timeline', 'FAQ', 'Azioni'] as const;
+const TABS = ['Documenti', 'Timeline', 'FAQ', 'Azioni', 'Rendicontazione'] as const;
 type Tab = typeof TABS[number];
+
+function CompactBandoCard({ bando, sessionId }: { bando: MatchedBando; sessionId: string }) {
+  const candidatoKey = `incentio_candidato_${bando.id}`;
+  const [candidando, setCandidando] = useState(false);
+  const [candidatoApplicationId, setCandidatoApplicationId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(candidatoKey);
+  });
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+
+  const candidati = async (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    if (candidando || candidatoApplicationId) return;
+    setCandidando(true); setErrMsg(null);
+    try {
+      const r = await fetch(`${API_BASE}/api/visura/candidati`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId, bando_id: bando.id }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data?.error || 'Errore');
+      localStorage.setItem(candidatoKey, data.application_id);
+      setCandidatoApplicationId(data.application_id);
+    } catch (e2) {
+      setErrMsg(e2 instanceof Error ? e2.message : 'Errore');
+    } finally { setCandidando(false); }
+  };
+
+  return (
+    <div className="rounded-xl border border-white/10 bg-[#0F1F3D]/40 p-4 hover:border-[#38BDF8]/40 hover:bg-[#0F1F3D]/70 transition-all flex flex-col">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <h4 className="text-white font-semibold text-sm leading-tight line-clamp-2">{bando.titolo || 'Bando senza titolo'}</h4>
+        {bando.compatibility_score != null && (
+          <span className="shrink-0 px-2 py-0.5 rounded-md bg-white/10 text-white/70 text-xs font-bold">{bando.compatibility_score}</span>
+        )}
+      </div>
+      <p className="text-white/40 text-xs mb-2 line-clamp-1">{bando.ente_erogatore || 'Ente non specificato'}</p>
+      <div className="flex flex-wrap gap-2 text-xs mb-2">
+        {bando.importo_max_euro != null && (
+          <span className="text-white/70"><span className="text-white font-semibold">{eur(bando.importo_max_euro)}</span></span>
+        )}
+        {bando.percentuale_fondo_perduto != null && (
+          <span className="text-green-400 font-semibold">{bando.percentuale_fondo_perduto}% FP</span>
+        )}
+        {bando.scadenza && (
+          <span className="text-white/50">scad. {dateIt(bando.scadenza)}</span>
+        )}
+        {bando.tipo_bando && (
+          <span className="px-1.5 py-0.5 rounded bg-[#38BDF8]/10 text-[#38BDF8] uppercase text-[10px] font-bold">{bando.tipo_bando}</span>
+        )}
+      </div>
+      {bando.sintesi_100_parole && (
+        <p className="text-white/50 text-xs leading-relaxed line-clamp-3 mb-3">{bando.sintesi_100_parole}</p>
+      )}
+      <div className="mt-auto flex items-center gap-2 pt-2">
+        {bando.url_originale && (
+          <a href={bando.url_originale} target="_blank" rel="noopener noreferrer"
+            className="text-xs text-[#38BDF8] hover:underline">Sito ufficiale ↗</a>
+        )}
+        <span className="flex-1" />
+        {candidatoApplicationId ? (
+          <a href={`/application/${candidatoApplicationId}`}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-bold hover:bg-green-500/20">
+            <CheckCircle2 size={12} /> Candidato →
+          </a>
+        ) : (
+          <button onClick={candidati} disabled={candidando}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#38BDF8] text-[#0A0F1E] text-xs font-bold hover:opacity-90 disabled:opacity-50">
+            {candidando ? <><Loader2 size={12} className="animate-spin" /> ...</> : 'Candidati →'}
+          </button>
+        )}
+      </div>
+      {errMsg && <p className="text-red-400 text-xs mt-2">{errMsg}</p>}
+    </div>
+  );
+}
 
 function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
   const [activeTab, setActiveTab] = useState<Tab>('Documenti');
@@ -111,6 +218,33 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
     if (typeof window === 'undefined') return {};
     try { return JSON.parse(localStorage.getItem(actionsKey) ?? '{}'); } catch { return {}; }
   });
+  const candidatoKey = `incentio_candidato_${bando.id}`;
+  const [candidando, setCandidando] = useState(false);
+  const [candidatoApplicationId, setCandidatoApplicationId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(candidatoKey);
+  });
+  const [candidatoErr, setCandidatoErr] = useState<string | null>(null);
+
+  const candidati = async () => {
+    if (candidando || candidatoApplicationId) return;
+    setCandidando(true); setCandidatoErr(null);
+    try {
+      const r = await fetch(`${API_BASE}/api/visura/candidati`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId, bando_id: bando.id }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data?.error || 'Errore candidatura');
+      localStorage.setItem(candidatoKey, data.application_id);
+      setCandidatoApplicationId(data.application_id);
+    } catch (e) {
+      setCandidatoErr(e instanceof Error ? e.message : 'Errore');
+    } finally {
+      setCandidando(false);
+    }
+  };
 
   const toggleAction = (action: string) => {
     const next = { ...checked, [action]: !checked[action] };
@@ -122,10 +256,10 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
     const lines = [
       `CHECKLIST DOCUMENTI — ${bando.titolo}\n`,
       '✅ Documenti già in tuo possesso:',
-      ...(bando.documenti_necessari || []).map((d) => `  - ${d}`),
+      ...(bando.documenti_necessari ?? []).map((d) => `  - ${d}`),
       '',
       '⚠️ Documenti da raccogliere:',
-      ...(bando.documenti_da_raccogliere || []).map((d) => `  - ${d}`),
+      ...(bando.documenti_da_raccogliere ?? []).map((d) => `  - ${d}`),
     ].join('\n');
     const blob = new Blob([lines], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -133,37 +267,6 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
     a.href = url; a.download = `checklist_${bando.id}.txt`; a.click();
     URL.revokeObjectURL(url);
   };
-
-  const [creating, setCreating] = useState(false);
-  const creaCandidatura = async (b: Bando) => {
-    setCreating(true);
-    try {
-      const { getDemoProfileId } = await import('@/lib/demoProfile');
-      const profileId = getDemoProfileId();
-
-      // Genera template completo via /api/templates/genera
-      const tplRes = await fetch(`${API_BASE}/api/templates/genera`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bando_id: b.id,
-          profilo: { id: profileId, ragione_sociale: 'Azienda', settore_ateco: '' },
-        }),
-      });
-
-      if (!tplRes.ok) throw new Error('template fail');
-      const tplData = await tplRes.json();
-
-      // Salva candidatura
-      const candidaturaUrl = `/application/${b.id}?profileId=${profileId}&template=${encodeURIComponent(JSON.stringify(tplData.template).slice(0, 500))}`;
-      window.location.href = candidaturaUrl;
-    } catch {
-      alert('Errore nella generazione della candidatura. Riprova.');
-    } finally {
-      setCreating(false);
-    }
-  };
-  void creating;
 
   return (
     <div className="rounded-xl border border-white/10 bg-[#0F1F3D]/60 overflow-hidden">
@@ -182,8 +285,14 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
         </div>
         <div className="flex flex-wrap gap-3 text-sm mb-3">
           <span className="text-white/60">
-            <span className="text-white font-semibold">{eur(bando.importo_max_eur)}</span> max
+            <span className="text-white font-semibold">{eur(bando.importo_max_eur ?? bando.importo_max_euro)}</span> max
           </span>
+          {bando.percentuale_fondo_perduto != null && (
+            <>
+              <span className="text-white/30">·</span>
+              <span className="text-green-400 font-semibold">{bando.percentuale_fondo_perduto}% fondo perduto</span>
+            </>
+          )}
           <span className="text-white/30">·</span>
           <span className="text-white/60">Scadenza: <span className="text-white font-semibold">{dateIt(bando.scadenza)}</span></span>
           <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${urgencyBadge(bando.scadenza_urgenza)}`}>
@@ -191,11 +300,28 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
           </span>
         </div>
         <p className="text-white/60 text-sm leading-relaxed">{bando.motivazione}</p>
-        <button onClick={() => setExpanded(!expanded)}
-          className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-[#38BDF8] hover:text-[#38BDF8]/80 transition-colors">
-          {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          {expanded ? 'Meno dettagli' : 'Più dettagli'}
-        </button>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button onClick={() => setExpanded(!expanded)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#38BDF8] hover:text-[#38BDF8]/80 transition-colors">
+            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {expanded ? 'Meno dettagli' : 'Più dettagli'}
+          </button>
+          <span className="text-white/20">·</span>
+          {candidatoApplicationId ? (
+            <a href={`/application/${candidatoApplicationId}`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-bold hover:bg-green-500/20 transition-colors">
+              <CheckCircle2 size={13} /> Candidato — vedi candidatura →
+            </a>
+          ) : (
+            <button onClick={candidati} disabled={candidando}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#38BDF8] text-[#0A0F1E] text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+              {candidando ? (<><Loader2 size={13} className="animate-spin" /> Salvataggio…</>) : (<>Candidati →</>)}
+            </button>
+          )}
+          {candidatoErr && (
+            <span className="text-xs text-red-400">{candidatoErr}</span>
+          )}
+        </div>
       </div>
 
       {expanded && (
@@ -217,7 +343,7 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
                     <p className="text-green-400 text-xs font-bold uppercase tracking-wider mb-3">Hai già ✓</p>
                     <ul className="space-y-1.5">
                       {(bando.documenti_necessari?.length ?? 0) === 0 && <li className="text-white/30 text-sm">—</li>}
-                      {(bando.documenti_necessari || []).map((d, i) => (
+                      {(bando.documenti_necessari ?? []).map((d, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-white/80">
                           <CheckCircle2 size={14} className="text-green-400 mt-0.5 shrink-0" />{d}
                         </li>
@@ -228,7 +354,7 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
                     <p className="text-yellow-400 text-xs font-bold uppercase tracking-wider mb-3">Da raccogliere ⚠</p>
                     <ul className="space-y-1.5">
                       {(bando.documenti_da_raccogliere?.length ?? 0) === 0 && <li className="text-white/30 text-sm">—</li>}
-                      {(bando.documenti_da_raccogliere || []).map((d, i) => (
+                      {(bando.documenti_da_raccogliere ?? []).map((d, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-white/80">
                           <AlertTriangle size={14} className="text-yellow-400 mt-0.5 shrink-0" />{d}
                         </li>
@@ -236,16 +362,10 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
                     </ul>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <button onClick={downloadChecklist}
-                    className="text-sm font-semibold px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-white/70 hover:text-white transition-all flex items-center gap-2">
-                    <Download size={14} /> Genera checklist
-                  </button>
-                  <button onClick={() => creaCandidatura(bando)}
-                    className="text-sm font-bold px-4 py-2 rounded-lg bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-[#0A0F1E] transition-all flex items-center gap-2">
-                    <FileText size={14} /> Crea candidatura completa
-                  </button>
-                </div>
+                <button onClick={downloadChecklist}
+                  className="text-sm font-semibold px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-white/70 hover:text-white transition-all flex items-center gap-2">
+                  <Download size={14} /> Genera checklist
+                </button>
               </div>
             )}
 
@@ -272,7 +392,7 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
             {activeTab === 'FAQ' && (
               <div className="space-y-3">
                 {(bando.faq?.length ?? 0) === 0 && <p className="text-white/30 text-sm">Nessuna FAQ disponibile.</p>}
-                {(bando.faq || []).map((f, i) => (
+                {(bando.faq ?? []).map((f, i) => (
                   <Accordion key={i} title={f.domanda}>
                     <p className="text-white/70 text-sm leading-relaxed pt-1">{f.risposta}</p>
                   </Accordion>
@@ -283,7 +403,7 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
             {activeTab === 'Azioni' && (
               <ul className="space-y-3">
                 {(bando.azioni_preparatorie?.length ?? 0) === 0 && <li className="text-white/30 text-sm">Nessuna azione.</li>}
-                {(bando.azioni_preparatorie || []).map((a, i) => (
+                {(bando.azioni_preparatorie ?? []).map((a, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <input type="checkbox" id={`${bando.id}-action-${i}`}
                       checked={!!checked[a]} onChange={() => toggleAction(a)}
@@ -296,6 +416,38 @@ function BandoCard({ bando, sessionId }: { bando: Bando; sessionId: string }) {
                 ))}
               </ul>
             )}
+
+            {activeTab === 'Rendicontazione' && (() => {
+              const r = bando.pre_requisiti_rendicontazione;
+              if (!r) return <p className="text-white/30 text-sm">Pre-requisiti non disponibili.</p>;
+              const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
+                <div className="flex items-start justify-between gap-3 py-2 border-b border-white/5">
+                  <span className="text-white/50 text-xs uppercase tracking-wider">{label}</span>
+                  <span className="text-white text-sm font-semibold text-right">{value}</span>
+                </div>
+              );
+              const yn = (b?: boolean) => b == null ? <span className="text-white/30">N/D</span> : (b ? <span className="text-yellow-400">SÌ</span> : <span className="text-green-400">NO</span>);
+              return (
+                <div className="space-y-1">
+                  <p className="text-white/60 text-xs mb-3 italic">
+                    Cosa devi sapere PRIMA di candidarti — anticipa i requisiti che incontrerai dopo la vincita.
+                  </p>
+                  <Row label="Bonifico parlante (CUP/CIG)" value={yn(r.bonifico_parlante_richiesto)} />
+                  <Row label="Time-sheet personale" value={yn(r.time_sheet_personale)} />
+                  <Row label="Soglia preventivi multipli" value={r.soglia_preventivi_multipli_eur != null ? `${eur(r.soglia_preventivi_multipli_eur)}` : 'N/D'} />
+                  <Row label="Tetto spese personale" value={r.tetto_spese_personale_pct != null ? `${r.tetto_spese_personale_pct}%` : 'N/D'} />
+                  <Row label="Tetto spese attrezzature" value={r.tetto_spese_attrezzature_pct != null ? `${r.tetto_spese_attrezzature_pct}%` : 'N/D'} />
+                  <Row label="Conservazione documenti" value={r.anni_conservazione_documenti != null ? `${r.anni_conservazione_documenti} anni` : 'N/D'} />
+                  <Row label="Audit ente prevedibile" value={yn(r.audit_ente_prevedibile)} />
+                  {r.note_critiche && (
+                    <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+                      <p className="text-red-300 text-xs uppercase tracking-wider font-bold mb-1.5">⚠️ Errori che causerebbero revoca</p>
+                      <p className="text-red-100/90 text-sm leading-relaxed">{r.note_critiche}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
@@ -332,24 +484,13 @@ function UploadPhase({ onSuccess, isNew }: { onSuccess: (sessionId: string) => v
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleUpload = async () => {
+  const handleUpload = () => {
     if (!file) return;
     setError(''); setUploading(true); setProgress(0);
-
-    // Ottieni token JWT per auth
-    let token: string | null = null;
-    try {
-      const { createClient } = await import('@/lib/supabase/client');
-      const sb = createClient();
-      const { data: { session } } = await sb.auth.getSession();
-      token = session?.access_token || null;
-    } catch { /* prosegue senza auth */ }
-
     const fd = new FormData();
     fd.append('visura', file);
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${API_BASE}/api/visura/upload`);
-    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
     };
@@ -469,12 +610,6 @@ function UploadPhase({ onSuccess, isNew }: { onSuccess: (sessionId: string) => v
         <p className="text-center text-xs text-white/25 mt-4">
           I dati vengono elaborati in modo sicuro e non condivisi con terze parti.
         </p>
-
-        {isNew && (
-          <a href="/onboarding" className="block text-center text-xs text-white/40 hover:text-white/60 mt-3 underline underline-offset-2 transition-colors">
-            Continua senza visura →
-          </a>
-        )}
       </div>
     </div>
   );
@@ -493,32 +628,56 @@ function LoadingPhase({ sessionId, onComplete }: { sessionId: string; onComplete
   };
 
   useEffect(() => {
+    let consecutiveErrors = 0;
+    const MAX_CONSECUTIVE_ERRORS = 5; // tollera fino a 5 errori di rete consecutivi
     const poll = async () => {
       try {
-        const res = await fetchAuth(`${API_BASE}/api/visura/session/${sessionId}`);
-        if (!res.ok) throw new Error();
-        const data: { status: Status } = await res.json();
+        // Endpoint corretto: /session/ (non /status/)
+        const res = await fetch(`${API_BASE}/api/visura/session/${sessionId}`);
+        if (!res.ok) throw new Error('http ' + res.status);
+        const data: { status: Status; advisory_report?: AdvisoryReport | null; matched_bandi?: MatchedBando[] | null } = await res.json();
+        consecutiveErrors = 0; // reset al primo successo
         const step = STATUS_STEP[data.status];
         if (step >= 0) setCurrentStep(step);
         if (data.status === 'complete') {
           stopPolling();
-          // Fetch the advisory report
           const cacheKey = `incentio_advisory_${sessionId}`;
+          // Inietta TUTTI i bandi compatibili nel report (per la sezione "altri bandi")
+          const enrichReport = (rep: AdvisoryReport) => ({
+            ...rep,
+            matched_bandi_full: data.matched_bandi || rep.matched_bandi_full || [],
+          });
+          // Se l'advisory è già nella sessione, usalo direttamente (no seconda chiamata)
+          if (data.advisory_report) {
+            const enriched = enrichReport(data.advisory_report);
+            localStorage.setItem(cacheKey, JSON.stringify(enriched));
+            onComplete(enriched);
+            return;
+          }
+          // Cache locale
           const cached = localStorage.getItem(cacheKey);
-          if (cached) { onComplete(JSON.parse(cached)); return; }
-          const rpt = await fetchAuth(`${API_BASE}/api/visura/advise`, {
+          if (cached) { onComplete(enrichReport(JSON.parse(cached))); return; }
+          // Fallback: chiama /advise (raramente necessario)
+          const rpt = await fetch(`${API_BASE}/api/visura/advise`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sessionId }),
           });
-          if (!rpt.ok) throw new Error();
+          if (!rpt.ok) throw new Error('advise http ' + rpt.status);
           const rptData: { advisory: AdvisoryReport } = await rpt.json();
-          localStorage.setItem(cacheKey, JSON.stringify(rptData.advisory));
-          onComplete(rptData.advisory);
+          const enriched = enrichReport(rptData.advisory);
+          localStorage.setItem(cacheKey, JSON.stringify(enriched));
+          onComplete(enriched);
         }
         if (data.status === 'error') { stopPolling(); setError('Errore durante l\'elaborazione.'); }
-      } catch {
-        stopPolling(); setError('Errore di connessione durante il polling.');
+      } catch (err) {
+        consecutiveErrors += 1;
+        console.warn('[poll] error', consecutiveErrors, '/', MAX_CONSECUTIVE_ERRORS, err);
+        if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+          stopPolling();
+          setError('Errore di connessione durante il polling.');
+        }
+        // altrimenti il prossimo tick di setInterval ritenta
       }
     };
 
@@ -526,7 +685,7 @@ function LoadingPhase({ sessionId, onComplete }: { sessionId: string; onComplete
       try {
         if (!phaseDone.current.parse) {
           setCurrentStep(1);
-          const r = await fetchAuth(`${API_BASE}/api/visura/parse`, {
+          const r = await fetch(`${API_BASE}/api/visura/parse`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sessionId }),
           });
@@ -535,7 +694,7 @@ function LoadingPhase({ sessionId, onComplete }: { sessionId: string; onComplete
         }
         if (!phaseDone.current.advise) {
           setCurrentStep(2);
-          const r = await fetchAuth(`${API_BASE}/api/visura/advise`, {
+          const r = await fetch(`${API_BASE}/api/visura/advise`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_id: sessionId }),
           });
@@ -605,7 +764,7 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
 
   const downloadReport = async () => {
     try {
-      const res = await fetchAuth(`${API_BASE}/api/visura/report/${sessionId}`);
+      const res = await fetch(`${API_BASE}/api/visura/report/${sessionId}`);
       if (!res.ok) throw new Error();
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -645,7 +804,7 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
                     <div>
                       <p className="text-green-400 text-xs font-bold uppercase tracking-wider mb-2">Punti di forza</p>
                       <ul className="space-y-1">
-                        {(s.punti_di_forza || []).map((p, i) => (
+                        {(s.punti_di_forza ?? []).map((p, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-white/70">
                             <CheckCircle2 size={13} className="text-green-400 mt-0.5 shrink-0" />{p}
                           </li>
@@ -657,7 +816,7 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
                     <div>
                       <p className="text-yellow-400 text-xs font-bold uppercase tracking-wider mb-2">Criticità</p>
                       <ul className="space-y-1">
-                        {(s.criticita || []).map((c, i) => (
+                        {(s.criticita ?? []).map((c, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-white/70">
                             <AlertTriangle size={13} className="text-yellow-400 mt-0.5 shrink-0" />{c}
                           </li>
@@ -677,21 +836,41 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
 
         {/* ── B: Bandi compatibili ──────────────────────────────────── */}
         <section>
-          <h2 className="text-xl font-extrabold text-white mb-1">I tuoi bandi</h2>
-          <p className="text-white/50 text-sm mb-5">compatibili ora con la tua visura</p>
-          {report.bandi_prioritari.length === 0 ? (
+          <h2 className="text-xl font-extrabold text-white mb-1">I tuoi bandi prioritari</h2>
+          <p className="text-white/50 text-sm mb-5">analisi profonda dei {(report.bandi_prioritari?.length ?? 0)} match più strategici</p>
+          {(report.bandi_prioritari?.length ?? 0) === 0 ? (
             <div className="flex flex-col items-center gap-3 py-12 text-center rounded-xl border border-white/10">
               <FileText size={32} className="text-white/20" />
               <p className="text-white/40 text-sm">Nessun bando trovato.</p>
             </div>
           ) : (
             <div className="space-y-5">
-              {(report.bandi_prioritari || []).slice(0, 5).map((bando, idx) => (
-                <BandoCard key={bando.id || idx} bando={bando} sessionId={sessionId} />
+              {(report.bandi_prioritari ?? []).map((bando) => (
+                <BandoCard key={bando.id} bando={bando} sessionId={sessionId} />
               ))}
             </div>
           )}
         </section>
+
+        {/* ── B2: Altri bandi compatibili (card compatte, lista completa) ── */}
+        {(() => {
+          const prioritariIds = new Set((report.bandi_prioritari ?? []).map(b => b.id));
+          const altri = (report.matched_bandi_full ?? []).filter(b => !prioritariIds.has(b.id));
+          if (altri.length === 0) return null;
+          return (
+            <section>
+              <h2 className="text-xl font-extrabold text-white mb-1">Altri bandi compatibili</h2>
+              <p className="text-white/50 text-sm mb-5">
+                {altri.length} bando{altri.length === 1 ? '' : 'i'} aggiunti{altri.length === 1 ? 'o' : ''} che combaciano con il tuo profilo (analisi semplificata)
+              </p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {altri.map(b => (
+                  <CompactBandoCard key={b.id} bando={b} sessionId={sessionId} />
+                ))}
+              </div>
+            </section>
+          );
+        })()}
 
         {/* ── C: Come accedere ad altri fondi ──────────────────────── */}
         <section>
@@ -699,7 +878,7 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
           <p className="text-white/50 text-sm mb-6">Strategie per ampliare il tuo accesso ai finanziamenti pubblici</p>
 
           {/* C1 — ATECO consigliati */}
-          {report.nuovi_ateco_consigliati.length > 0 && (
+          {(report.nuovi_ateco_consigliati?.length ?? 0) > 0 && (
             <div className="mb-8">
               <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
                 <span className="w-6 h-6 rounded-md bg-[#38BDF8]/10 flex items-center justify-center">
@@ -708,7 +887,7 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
                 Nuovi codici ATECO consigliati
               </h3>
               <div className="space-y-4">
-                {report.nuovi_ateco_consigliati.map((a, i) => (
+                {(report.nuovi_ateco_consigliati ?? []).map((a, i) => (
                   <div key={i} className="rounded-xl border border-white/10 bg-[#0F1F3D]/60 p-5">
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div>
@@ -718,9 +897,9 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
                       <span className="text-green-400 font-bold text-lg whitespace-nowrap shrink-0">{eur(a.valore_potenziale_eur)}</span>
                     </div>
                     <p className="text-white/60 text-sm mb-3 leading-relaxed">{a.motivazione}</p>
-                    {a.bandi_sbloccati?.length > 0 && (
+                    {(a.bandi_sbloccati?.length ?? 0) > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-3">
-                        {(a.bandi_sbloccati || []).map((b, j) => (
+                        {(a.bandi_sbloccati ?? []).map((b, j) => (
                           <span key={j} className="text-xs px-2 py-0.5 rounded-full bg-white/8 border border-white/10 text-white/60">{b}</span>
                         ))}
                       </div>
@@ -739,7 +918,7 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
           )}
 
           {/* C2 — Altre strategie */}
-          {report.altre_strategie.length > 0 && (
+          {(report.altre_strategie?.length ?? 0) > 0 && (
             <div>
               <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
                 <span className="w-6 h-6 rounded-md bg-purple-500/10 flex items-center justify-center">
@@ -748,16 +927,16 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
                 Altre strategie
               </h3>
               <div className="space-y-4">
-                {report.altre_strategie.map((str, i) => (
+                {(report.altre_strategie ?? []).map((str, i) => (
                   <div key={i} className="rounded-xl border border-white/10 bg-[#0F1F3D]/60 p-5">
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <h4 className="text-white font-bold text-sm">{str.tipo}</h4>
                       <span className="text-green-400 font-bold text-base whitespace-nowrap shrink-0">{eur(str.valore_potenziale_eur)}</span>
                     </div>
                     <p className="text-white/60 text-sm mb-3 leading-relaxed">{str.descrizione}</p>
-                    {str.bandi_sbloccati?.length > 0 && (
+                    {(str.bandi_sbloccati?.length ?? 0) > 0 && (
                       <div className="flex flex-wrap gap-1.5">
-                        {(str.bandi_sbloccati || []).map((b, j) => (
+                        {(str.bandi_sbloccati ?? []).map((b, j) => (
                           <span key={j} className="text-xs px-2 py-0.5 rounded-full bg-white/8 border border-white/10 text-white/60">{b}</span>
                         ))}
                       </div>
@@ -774,9 +953,9 @@ function ResultsPhase({ report, sessionId }: { report: AdvisoryReport; sessionId
           <h2 className="text-xl font-extrabold text-white mb-5">Piano di azione consigliato</h2>
           <div className="grid sm:grid-cols-3 gap-4 mb-8">
             {[
-              { label: 'Nei prossimi 30 giorni', items: report.piano_azione.immediato_30gg, bg: 'bg-blue-500/5 border-blue-500/20', accent: 'text-blue-400', dot: 'bg-blue-400' },
-              { label: '30–90 giorni', items: report.piano_azione.breve_termine_90gg, bg: 'bg-indigo-500/5 border-indigo-500/20', accent: 'text-indigo-400', dot: 'bg-indigo-400' },
-              { label: '3–6 mesi', items: report.piano_azione.medio_termine_6mesi, bg: 'bg-purple-500/5 border-purple-500/20', accent: 'text-purple-400', dot: 'bg-purple-400' },
+              { label: 'Nei prossimi 30 giorni', items: report.piano_azione?.immediato_30gg ?? [], bg: 'bg-blue-500/5 border-blue-500/20', accent: 'text-blue-400', dot: 'bg-blue-400' },
+              { label: '30–90 giorni', items: report.piano_azione?.breve_termine_90gg ?? [], bg: 'bg-indigo-500/5 border-indigo-500/20', accent: 'text-indigo-400', dot: 'bg-indigo-400' },
+              { label: '3–6 mesi', items: report.piano_azione?.medio_termine_6mesi ?? [], bg: 'bg-purple-500/5 border-purple-500/20', accent: 'text-purple-400', dot: 'bg-purple-400' },
             ].map(({ label, items, bg, accent, dot }, i) => (
               <div key={i} className={`rounded-xl border p-5 ${bg}`}>
                 <div className="flex items-center gap-2 mb-3">

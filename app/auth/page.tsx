@@ -31,41 +31,33 @@ export default function AuthPage() {
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        // Check if user has a profile in Supabase (by id or user_id)
-        const { data: profileById } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', data.user.id)
-          .single();
-        const { data: profileByUserId } = !profileById ? await supabase
+        // Check if user has a profile in Supabase
+        const { data: profile } = await supabase
           .from('profiles')
           .select('id')
           .eq('user_id', data.user.id)
-          .single() : { data: profileById };
-
-        const profile = profileById || profileByUserId;
-        if (!profile) {
-          // Nessun profilo → visura come primo step
-          router.push('/visura?nuovo=true');
+          .single();
+        if (profile) {
+          // Profilo già auto-creato dalla visura o da onboarding manuale → vai direttamente
+          router.push(`/risultati?id=${data.user.id}`);
           return;
         }
-
-        // Check se ha già una visura caricata
-        const { data: visura } = await supabase
+        // Nessun profilo Supabase: verifica se l'utente ha caricato una visura.
+        // Se sì, salta onboarding (il profilo verrà creato dal /parse).
+        const { data: visuraSess } = await supabase
           .from('visura_sessions')
-          .select('id')
+          .select('id, status')
           .eq('user_id', data.user.id)
-          .eq('status', 'complete')
+          .order('created_at', { ascending: false })
           .limit(1)
-          .single();
-
-        if (!visura) {
-          // Ha profilo ma nessuna visura completata → visura come primo step
-          router.push('/visura?nuovo=true');
+          .maybeSingle();
+        if (visuraSess) {
+          // Ha già una visura → vai a /visura per riprendere il flusso
+          router.push('/visura');
           return;
         }
-
-        router.push(`/risultati?id=${profile.id}`);
+        // Nessun profilo e nessuna visura → onboarding necessario
+        router.push('/onboarding');
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Errore di autenticazione');

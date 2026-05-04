@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { getApplicationData } from '@/lib/api';
 import type { ApplicationData, DocumentoStatus, TimelineStep, FaqItem } from '@/lib/api';
+import ApplicationChat from '@/components/application/ApplicationChat';
+import { Sparkles } from 'lucide-react';
 
 // ── Collapsible Section ────────────────────────────────────────────────────
 function Section({
@@ -514,6 +516,14 @@ export default function ApplicationPage({ params }: PageProps) {
                         {/* FAQ */}
                         <Section title="FAQ" icon={AlertCircle} defaultOpen={false}>
                             <FaqAccordion faq={data.faq} />
+                        </Section>
+
+                        {/* Chatbot per sviluppo progettualità */}
+                        <Section title="Sviluppa la tua candidatura con l'AI" icon={Sparkles} defaultOpen={true}>
+                            <p className="text-sm text-white/60 mb-3">
+                                Chiedi piani di progetto, KPI, partenariati, quadro logico. Ogni risposta dell'AI può essere esportata direttamente nella candidatura cliccando <span className="text-[#38BDF8] font-semibold">Esporta nella candidatura</span>.
+                            </p>
+                            {id && <ApplicationChat applicationId={id} />}
                         </Section>
 
                         {/* Actions bar */}

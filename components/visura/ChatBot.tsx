@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, X } from 'lucide-react';
-import { fetchAuth } from '@/lib/fetchAuth';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
+import { API_BASE } from '@/lib/config';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -17,11 +15,25 @@ const QUICK_CHIPS = [
   'Vale la pena aprire un nuovo codice ATECO?',
 ];
 
-function renderMarkdown(text: string): string {
-  return text
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc">$1</li>')
-    .replace(/\n/g, '<br />');
+/**
+ * Render markdown minimale SAFE: ritorna React nodes (no dangerouslySetInnerHTML).
+ * React escape automaticamente, eliminando rischio XSS dalla risposta LLM.
+ */
+function renderMarkdown(text: string): React.ReactNode {
+  const lines = (text || '').split('\n');
+  return lines.map((line, idx) => {
+    const isBullet = /^- /.test(line);
+    const content = isBullet ? line.replace(/^- /, '') : line;
+    const parts = content.split(/(\*\*[^*]+\*\*)/g).map((p, i) =>
+      p.startsWith('**') && p.endsWith('**')
+        ? <strong key={i}>{p.slice(2, -2)}</strong>
+        : <React.Fragment key={i}>{p}</React.Fragment>
+    );
+    if (isBullet) {
+      return <li key={idx} className="ml-4 list-disc">{parts}</li>;
+    }
+    return <React.Fragment key={idx}>{parts}{idx < lines.length - 1 && <br />}</React.Fragment>;
+  });
 }
 
 interface ChatBotProps {
@@ -50,7 +62,7 @@ export default function ChatBot({ sessionId }: ChatBotProps) {
     setLoading(true);
 
     try {
-      const res = await fetchAuth(`${API_BASE}/api/visura/chat`, {
+      const res = await fetch(`${API_BASE}/api/visura/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId, messages: newMessages }),
@@ -112,9 +124,7 @@ export default function ChatBot({ sessionId }: ChatBotProps) {
                 }`}
             >
               {msg.role === 'assistant' ? (
-                <span
-                  dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
-                />
+                <span>{renderMarkdown(msg.content)}</span>
               ) : (
                 msg.content
               )}
