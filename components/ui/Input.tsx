@@ -19,11 +19,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     id={id}
                     ref={ref}
                     className={clsx(
-                        'w-full px-3.5 py-2.5 rounded-lg text-white text-sm transition-all duration-150',
-                        'bg-white/5 focus:outline-none focus:ring-2 focus:ring-[#38BDF8] focus:border-[#38BDF8]',
+                        'w-full px-3.5 py-2.5 rounded-lg text-zinc-100 text-sm transition-all duration-150',
+                        'bg-zinc-950/40 border focus:outline-none focus:ring-2 focus:ring-indigo-550/20 focus:border-indigo-500',
                         error
-                            ? 'border-red-400 focus:ring-red-400'
-                            : 'border border-[#38BDF8]/20 hover:border-[#38BDF8]/40',
+                            ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-550'
+                            : 'border-zinc-800 hover:border-zinc-700',
                         className
                     )}
                     {...props}

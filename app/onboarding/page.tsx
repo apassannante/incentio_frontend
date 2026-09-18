@@ -173,14 +173,14 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-[#09090b] flex items-center justify-center px-4 py-12 font-sans text-zinc-100">
       <div className="w-full max-w-lg">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl">
-            <span className="font-extrabold text-white">Incent</span><span className="font-extrabold text-[#38BDF8]">io</span>
+          <h1 className="text-2xl font-bold tracking-tight text-white">
+            Incentio
           </h1>
-          <p className="text-white/50 mt-1 text-sm">Configura il tuo profilo aziendale</p>
+          <p className="text-zinc-500 mt-1 text-xs">Configura il tuo profilo aziendale</p>
         </div>
 
         {/* Step indicators */}
@@ -188,53 +188,53 @@ export default function OnboardingPage() {
           {STEPS.map((s, i) => (
             <div key={i} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                i < step ? 'bg-[#38BDF8] text-[#0A0F1E]' :
-                i === step ? 'bg-[#38BDF8] text-[#0A0F1E] ring-4 ring-[#38BDF8]/20' :
-                'bg-white/10 text-white/40'
+                i < step ? 'bg-indigo-500 text-white' :
+                i === step ? 'bg-zinc-100 text-zinc-950 ring-4 ring-zinc-800/50' :
+                'bg-zinc-900 text-zinc-500 border border-zinc-800'
               }`}>
-                {i < step ? '✓' : <s.icon size={14} />}
+                {i < step ? '✓' : <s.icon size={13} />}
               </div>
-              <span className={`text-xs font-medium hidden sm:block ${i === step ? 'text-[#38BDF8]' : 'text-white/40'}`}>{s.label}</span>
-              {i < STEPS.length - 1 && <div className={`w-8 h-0.5 ${i < step ? 'bg-[#38BDF8]' : 'bg-white/10'}`} />}
+              <span className={`text-xs font-semibold hidden sm:block ${i === step ? 'text-zinc-100' : 'text-zinc-500'}`}>{s.label}</span>
+              {i < STEPS.length - 1 && <div className={`w-8 h-px ${i < step ? 'bg-indigo-500' : 'bg-zinc-850'}`} />}
             </div>
           ))}
         </div>
 
-        <div className="bg-[#0F1F3D] rounded-2xl border border-[#38BDF8]/20 p-8">
+        <div className="bg-zinc-900/40 rounded-2xl border border-zinc-800 p-8 backdrop-blur-md">
           {/* STEP 0: Dati azienda */}
           {step === 0 && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Building2 size={20} className="text-[#38BDF8]" /> La tua azienda
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Building2 size={18} className="text-zinc-400" /> La tua azienda
                 </h2>
-                <p className="text-sm text-white/50 mt-1">Questi dati ci permettono di trovare i bandi più adatti.</p>
+                <p className="text-xs text-zinc-500 mt-1">Questi dati ci permettono di trovare i bandi più adatti.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1.5">Ragione sociale</label>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">Ragione sociale</label>
                 <input
                   type="text"
                   value={form.ragione_sociale}
                   onChange={(e) => setForm({ ...form, ragione_sociale: e.target.value })}
                   placeholder="Es. Rossi Meccanica S.r.l."
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#38BDF8]/20 bg-white/5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
+                  className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950/40 text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-550/20 focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1.5">Settore ATECO</label>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">Settore ATECO</label>
                 <div className="relative mb-1.5">
-                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
+                  <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
                   <input
                     type="text"
                     placeholder="Cerca settore..."
                     value={settoreSearch}
                     onChange={(e) => setSettoreSearch(e.target.value)}
-                    className="w-full pl-8 pr-3 py-2 rounded-xl border border-[#38BDF8]/20 bg-white/5 text-white text-xs focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-zinc-800 bg-zinc-950/40 text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-550/20 focus:border-indigo-500"
                   />
                 </div>
-                <div className="max-h-44 overflow-y-auto rounded-xl border border-[#38BDF8]/20 bg-[#0A0F1E]">
+                <div className="max-h-44 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950">
                   {(() => {
                     const q = settoreSearch.toLowerCase();
                     const gruppi = q
@@ -243,14 +243,14 @@ export default function OnboardingPage() {
                     return gruppi.map((g) => (
                       g.voci.length === 0 ? null :
                       <div key={g.sezione}>
-                        <div className="px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-white/40 bg-[#0F1F3D] sticky top-0">
+                        <div className="px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-zinc-500 bg-zinc-900 sticky top-0 border-b border-zinc-850">
                           {g.sezione}
                         </div>
                         {g.voci.map((s) => (
                           <button key={s.value} type="button"
                             onClick={() => { setForm(f => ({ ...f, settore: s.value })); setSettoreSearch(''); }}
                             className={`w-full text-left px-3 py-1.5 text-xs transition-colors ${
-                              form.settore === s.value ? 'bg-[#38BDF8]/10 text-[#38BDF8] font-semibold' : 'text-white/70 hover:bg-white/5'
+                              form.settore === s.value ? 'bg-indigo-500/10 text-indigo-400 font-semibold' : 'text-zinc-300 hover:bg-zinc-900/50'
                             }`}
                           >{s.label}</button>
                         ))}
@@ -259,22 +259,22 @@ export default function OnboardingPage() {
                   })()}
                 </div>
                 {form.settore && (
-                  <p className="text-xs text-[#38BDF8] font-medium mt-1">
+                  <p className="text-xs text-indigo-400 font-semibold mt-1">
                     ✓ {SETTORI_FLAT.find(s => s.value === form.settore)?.label ?? form.settore}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1.5">Dimensione</label>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">Dimensione</label>
                 <div className="flex gap-2">
                   {DIMENSIONI.map((d) => (
                     <button key={d} type="button"
                       onClick={() => setForm(f => ({ ...f, dimensione: d }))}
-                      className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all capitalize ${
+                      className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border transition-all capitalize ${
                         form.dimensione === d
-                          ? 'bg-[#38BDF8] text-[#0A0F1E] border-[#38BDF8]'
-                          : 'border-white/10 bg-white/5 text-white/70 hover:border-[#38BDF8]/40'
+                          ? 'bg-zinc-100 text-zinc-950 border-zinc-100 shadow-sm'
+                          : 'border-zinc-800 bg-zinc-950/40 text-zinc-400 hover:border-zinc-700 hover:text-white'
                       }`}
                     >{d}</button>
                   ))}
@@ -283,21 +283,21 @@ export default function OnboardingPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1.5 flex items-center gap-1">
-                    <MapPin size={13} className="text-white/40" /> Provincia
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider flex items-center gap-1">
+                    <MapPin size={12} className="text-zinc-500" /> Provincia
                   </label>
                   <select
                     value={form.provincia}
                     onChange={(e) => setForm({ ...form, provincia: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-[#38BDF8]/20 bg-white/5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
+                    className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950/40 text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-550/20 focus:border-indigo-500"
                   >
                     <option value="">Seleziona</option>
                     {PROVINCE_LOM.map((p) => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-1.5 flex items-center gap-1">
-                    <Users size={13} className="text-white/40" /> Dipendenti
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider flex items-center gap-1">
+                    <Users size={12} className="text-zinc-500" /> Dipendenti
                   </label>
                   <input
                     type="number"
@@ -305,7 +305,7 @@ export default function OnboardingPage() {
                     onChange={(e) => setForm({ ...form, num_dipendenti: e.target.value })}
                     placeholder="Es. 25"
                     min={1}
-                    className="w-full px-4 py-2.5 rounded-xl border border-[#38BDF8]/20 bg-white/5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
+                    className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950/40 text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-550/20 focus:border-indigo-500"
                   />
                 </div>
               </div>
@@ -316,47 +316,47 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Settings size={20} className="text-[#38BDF8]" /> Aree di interesse
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Settings size={18} className="text-zinc-400" /> Aree di interesse
                 </h2>
-                <p className="text-sm text-white/50 mt-1">Seleziona i temi su cui vuoi ricevere bandi.</p>
+                <p className="text-xs text-zinc-500 mt-1">Seleziona i temi su cui vuoi ricevere bandi.</p>
               </div>
 
               <div className="space-y-3">
                 {MODULI_INFO.map((m) => (
                   <button key={m.id} type="button"
                     onClick={() => toggleModulo(m.id)}
-                    className={`w-full text-left px-4 py-3.5 rounded-xl border-2 transition-all ${
+                    className={`w-full text-left px-4 py-3.5 rounded-xl border transition-all ${
                       form.moduli.includes(m.id)
-                        ? 'border-[#38BDF8] bg-[#38BDF8]/10'
-                        : 'border-white/10 bg-white/5 hover:border-[#38BDF8]/40'
+                        ? 'border-indigo-500 bg-indigo-500/10'
+                        : 'border-zinc-800 bg-zinc-950/40 hover:border-zinc-700'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`text-sm font-semibold ${form.moduli.includes(m.id) ? 'text-[#38BDF8]' : 'text-white'}`}>{m.label}</span>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                        form.moduli.includes(m.id) ? 'border-[#38BDF8] bg-[#38BDF8]' : 'border-white/30'
+                      <span className={`text-xs font-bold ${form.moduli.includes(m.id) ? 'text-indigo-400' : 'text-zinc-200'}`}>{m.label}</span>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                        form.moduli.includes(m.id) ? 'border-indigo-500 bg-indigo-500' : 'border-zinc-700 bg-zinc-950'
                       }`}>
-                        {form.moduli.includes(m.id) && <span className="text-[#0A0F1E] text-xs font-bold">✓</span>}
+                        {form.moduli.includes(m.id) && <span className="text-white text-[9px] font-bold">✓</span>}
                       </div>
                     </div>
-                    <p className="text-xs text-white/50 mt-0.5">{m.desc}</p>
+                    <p className="text-[11px] text-zinc-500 mt-0.5">{m.desc}</p>
                   </button>
                 ))}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">
-                  Importo minimo bando: <span className="text-[#38BDF8] font-bold">€{form.soglia_importo_min.toLocaleString('it-IT')}</span>
+                <label className="block text-xs font-semibold text-zinc-300 mb-2 uppercase tracking-wider">
+                  Importo minimo bando: <span className="text-indigo-400 font-bold">€{form.soglia_importo_min.toLocaleString('it-IT')}</span>
                 </label>
                 <input
                   type="range"
                   min={0} max={500000} step={5000}
                   value={form.soglia_importo_min}
                   onChange={(e) => setForm({ ...form, soglia_importo_min: parseInt(e.target.value) })}
-                  className="w-full accent-[#38BDF8]"
+                  className="w-full accent-indigo-500 cursor-pointer bg-zinc-800 h-1 rounded-lg appearance-none"
                 />
-                <div className="flex justify-between text-xs text-white/40 mt-1">
+                <div className="flex justify-between text-[10px] text-zinc-550 mt-1.5 font-semibold">
                   <span>€0</span><span>€500k</span>
                 </div>
               </div>
@@ -367,51 +367,51 @@ export default function OnboardingPage() {
           {step === 2 && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Bell size={20} className="text-[#38BDF8]" /> Preferenze notifiche
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Bell size={18} className="text-zinc-400" /> Preferenze notifiche
                 </h2>
-                <p className="text-sm text-white/50 mt-1">Quando vuoi essere avvisato dei nuovi bandi?</p>
+                <p className="text-xs text-zinc-500 mt-1">Quando vuoi essere avvisato dei nuovi bandi?</p>
               </div>
 
               <div>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <div
                     onClick={() => setForm({ ...form, notifiche_email: !form.notifiche_email })}
-                    className={`w-11 h-6 rounded-full transition-colors relative ${form.notifiche_email ? 'bg-[#38BDF8]' : 'bg-white/20'}`}
+                    className={`w-10 h-5.5 rounded-full transition-colors relative ${form.notifiche_email ? 'bg-indigo-500' : 'bg-zinc-800'}`}
                   >
-                    <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${form.notifiche_email ? 'left-5' : 'left-0.5'}`} />
+                    <div className={`absolute top-0.5 w-4.5 h-4.5 bg-white rounded-full shadow transition-all ${form.notifiche_email ? 'left-5' : 'left-0.5'}`} />
                   </div>
-                  <span className="text-sm font-medium text-white/80">Ricevi notifiche via email</span>
+                  <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Ricevi notifiche via email</span>
                 </label>
               </div>
 
               {form.notifiche_email && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-white/80 mb-1.5">Email per le notifiche</label>
+                    <label className="block text-xs font-semibold text-zinc-300 mb-1.5 uppercase tracking-wider">Email per le notifiche</label>
                     <input
                       type="email"
                       value={form.email_notifiche}
                       onChange={(e) => setForm({ ...form, email_notifiche: e.target.value })}
                       placeholder="La tua email (lascia vuoto per usare quella di login)"
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#38BDF8]/20 bg-white/5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
+                      className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950/40 text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-550/20 focus:border-indigo-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">Frequenza</label>
+                    <label className="block text-xs font-semibold text-zinc-300 mb-2 uppercase tracking-wider">Frequenza</label>
                     <div className="space-y-2">
                       {FREQUENZE.map((f) => (
                         <button key={f.id} type="button"
                           onClick={() => setForm({ ...form, frequenza_digest: f.id })}
-                          className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
+                          className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${
                             form.frequenza_digest === f.id
-                              ? 'border-[#38BDF8] bg-[#38BDF8]/10'
-                              : 'border-white/10 bg-white/5 hover:border-[#38BDF8]/40'
+                              ? 'border-indigo-500 bg-indigo-500/10'
+                              : 'border-zinc-800 bg-zinc-950/40 hover:border-zinc-700'
                           }`}
                         >
-                          <span className={`text-sm font-semibold block ${form.frequenza_digest === f.id ? 'text-[#38BDF8]' : 'text-white'}`}>{f.label}</span>
-                          <span className="text-xs text-white/50">{f.desc}</span>
+                          <span className={`text-xs font-bold block ${form.frequenza_digest === f.id ? 'text-indigo-400' : 'text-zinc-200'}`}>{f.label}</span>
+                          <span className="text-[10px] text-zinc-500 mt-0.5 font-medium">{f.desc}</span>
                         </button>
                       ))}
                     </div>
@@ -419,7 +419,7 @@ export default function OnboardingPage() {
                 </>
               )}
 
-              {error && <p className="text-sm text-red-400 bg-red-500/10 rounded-lg px-3 py-2">{error}</p>}
+              {error && <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/30 rounded-lg px-3.5 py-2.5 font-medium">{error}</p>}
             </div>
           )}
 
@@ -428,7 +428,7 @@ export default function OnboardingPage() {
             {step > 0 && (
               <button type="button"
                 onClick={() => setStep(step - 1)}
-                className="flex-1 py-2.5 rounded-xl border border-[#38BDF8]/20 text-sm font-medium text-white/60 hover:border-[#38BDF8]/40 hover:text-white transition-all"
+                className="flex-1 py-2.5 rounded-xl border border-zinc-800 text-xs font-semibold text-zinc-400 hover:border-zinc-700 hover:text-white transition-all duration-200"
               >
                 Indietro
               </button>
@@ -436,17 +436,17 @@ export default function OnboardingPage() {
             {step < STEPS.length - 1 ? (
               <button type="button"
                 onClick={() => setStep(step + 1)}
-                className="flex-1 py-2.5 rounded-xl bg-[#38BDF8] text-[#0A0F1E] text-sm font-bold hover:opacity-90 transition-all flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 rounded-xl bg-zinc-100 text-zinc-950 text-xs font-bold hover:bg-zinc-200 transition-all duration-200 flex items-center justify-center gap-1.5"
               >
-                Continua <ChevronRight size={16} />
+                Continua <ChevronRight size={14} />
               </button>
             ) : (
               <button type="button"
                 onClick={handleFinish}
                 disabled={loading}
-                className="flex-1 py-2.5 rounded-xl bg-[#38BDF8] text-[#0A0F1E] text-sm font-bold hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 rounded-xl bg-zinc-100 text-zinc-950 text-xs font-bold hover:bg-zinc-200 disabled:opacity-50 transition-all duration-200 flex items-center justify-center gap-1.5"
               >
-                {loading && <Loader2 size={16} className="animate-spin" />}
+                {loading && <Loader2 size={12} className="animate-spin" />}
                 Inizia a trovare bandi
               </button>
             )}

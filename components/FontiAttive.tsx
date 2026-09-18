@@ -57,10 +57,10 @@ export default function FontiAttive() {
   if (loading || fonti.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-8 mt-[-1rem]">
-      <div className="flex items-center gap-1 font-medium text-gray-700">
-        <ShieldCheck size={14} className="text-[#1A7A4A]" />
-        Fonti istituzionali verificate:
+    <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500 mb-8 mt-[-1rem] font-sans">
+      <div className="flex items-center gap-1.5 font-semibold text-zinc-500">
+        <ShieldCheck size={14} className="text-indigo-400" />
+        Fonti verificate:
       </div>
       <div className="flex flex-wrap items-center gap-1.5">
         {fonti.map((fonte, idx) => {
@@ -71,12 +71,12 @@ export default function FontiAttive() {
           return (
             <div key={fonte.nome} className="flex items-center">
               <span 
-                className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[11px] font-medium whitespace-nowrap cursor-help hover:bg-gray-200 transition-colors"
+                className="bg-zinc-900/50 border border-zinc-850 text-zinc-400 px-2 py-0.5 rounded text-[10px] font-semibold whitespace-nowrap cursor-help hover:bg-zinc-900 hover:text-white transition-colors"
                 title={`Ultimo aggiornamento: ${dateFormatted}`}
               >
                 {fonte.nome}
               </span>
-              {idx < fonti.length - 1 && <span className="text-gray-300 ml-1.5">·</span>}
+              {idx < fonti.length - 1 && <span className="text-zinc-800 ml-1.5">·</span>}
             </div>
           );
         })}

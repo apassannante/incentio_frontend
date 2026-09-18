@@ -56,19 +56,19 @@ export default function BandoDetailPage({ params }: PageProps) {
   const backHref = profileId ? `/risultati?id=${profileId}` : '/risultati';
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] text-white">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0A0F1E]/90 backdrop-blur border-b border-[#38BDF8]/20 px-6 py-4">
+      <header className="sticky top-0 z-50 bg-[#09090b]/80 backdrop-blur border-b border-zinc-900 px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center gap-4">
           <Link
             href={backHref}
-            className="flex items-center gap-1.5 text-sm text-white/50 hover:text-[#38BDF8] transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold text-zinc-450 hover:text-white transition-colors"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={14} />
             Torna ai risultati
           </Link>
-          <span className="text-xl font-bold">
-            <span className="text-white">Incent</span><span className="text-[#38BDF8]">io</span>
+          <span className="text-sm font-semibold tracking-tight text-white ml-auto sm:ml-0">
+            Incentio
           </span>
         </div>
       </header>
@@ -76,16 +76,16 @@ export default function BandoDetailPage({ params }: PageProps) {
       <div className="max-w-5xl mx-auto px-6 py-12">
         {loading && (
           <div className="flex flex-col items-center gap-4 py-24">
-            <Loader2 className="animate-spin text-[#38BDF8]" size={36} />
-            <p className="text-white/50">Caricamento scheda...</p>
+            <Loader2 className="animate-spin text-zinc-550" size={32} />
+            <p className="text-zinc-500 text-xs font-semibold">Caricamento scheda...</p>
           </div>
         )}
 
         {error && !loading && (
           <div className="flex flex-col items-center gap-3 py-24 text-center">
-            <AlertCircle size={36} className="text-red-400" />
-            <p className="text-white/60">{error}</p>
-            <Link href={backHref} className="text-sm text-[#38BDF8] font-semibold hover:underline">
+            <AlertCircle size={32} className="text-red-400" />
+            <p className="text-zinc-450 text-xs font-medium">{error}</p>
+            <Link href={backHref} className="text-xs text-indigo-400 font-semibold hover:underline">
               ← Torna ai risultati
             </Link>
           </div>
@@ -108,7 +108,7 @@ export default function BandoDetailPage({ params }: PageProps) {
             <GapAnalysisSection bandoId={id} profileId={profileId} />
 
             {/* MODULO D — Chatbot contestuale */}
-            <div className="pt-4 border-t border-[#38BDF8]/10">
+            <div className="pt-6 border-t border-zinc-900">
               <ChatPanel
                 profileId={profileId}
                 bandoId={id}

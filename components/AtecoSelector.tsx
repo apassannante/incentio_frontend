@@ -80,31 +80,31 @@ export default function AtecoSelector({
   };
 
   return (
-    <div ref={dropdownRef} className="space-y-3">
+    <div ref={dropdownRef} className="space-y-3 font-sans">
       {/* Primary ATECO */}
       <div>
-        <label className="block text-sm font-medium text-white/80 mb-1.5">{label} primario</label>
+        <label className="block text-xs font-semibold text-zinc-350 mb-1.5 uppercase tracking-wider">{label} primario</label>
         <button
           type="button"
           onClick={() => { setMode('primary'); setShowDropdown(!showDropdown); setSearch(''); }}
-          className="w-full text-left px-3 py-2.5 rounded-xl bg-[#0A0F1E] border border-gray-700 text-sm flex items-center justify-between hover:border-[#38BDF8]/50 transition-colors"
+          className="w-full text-left px-3.5 py-2.5 rounded-xl bg-zinc-950/40 border border-zinc-800 text-xs flex items-center justify-between hover:border-zinc-700 transition-colors focus:outline-none"
         >
-          <span className={primaryValue ? 'text-white' : 'text-gray-500'}>
+          <span className={primaryValue ? 'text-zinc-100 font-semibold' : 'text-zinc-500'}>
             {primaryValue ? getLabel(primaryValue) : 'Seleziona codice ATECO primario'}
           </span>
-          <ChevronDown size={14} className="text-gray-500" />
+          <ChevronDown size={14} className="text-zinc-500" />
         </button>
       </div>
 
       {/* Secondary ATECOs */}
       <div>
-        <label className="block text-sm font-medium text-white/80 mb-1.5">{label} secondari</label>
+        <label className="block text-xs font-semibold text-zinc-350 mb-1.5 uppercase tracking-wider">{label} secondari</label>
         <div className="flex flex-wrap gap-1.5 mb-2">
           {secondaryValues.map(c => (
-            <span key={c} className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-[#38BDF8]/15 border border-[#38BDF8]/30 text-[#38BDF8]">
+            <span key={c} className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-semibold">
               {c}
-              <button type="button" onClick={() => removeSecondary(c)} className="hover:text-white">
-                <X size={12} />
+              <button type="button" onClick={() => removeSecondary(c)} className="hover:text-white transition-colors">
+                <X size={10} />
               </button>
             </span>
           ))}
@@ -112,7 +112,7 @@ export default function AtecoSelector({
         <button
           type="button"
           onClick={() => { setMode('secondary'); setShowDropdown(!showDropdown); setSearch(''); }}
-          className="text-xs text-[#38BDF8] hover:underline"
+          className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
         >
           + Aggiungi ATECO secondario
         </button>
@@ -121,29 +121,29 @@ export default function AtecoSelector({
       {/* Dropdown */}
       {showDropdown && (
         <div className="relative z-50">
-          <div className="absolute top-0 left-0 right-0 bg-[#0F1F3D] border border-[#38BDF8]/30 rounded-xl shadow-2xl overflow-hidden">
+          <div className="absolute top-1 left-0 right-0 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden">
             {/* Search input */}
-            <div className="p-2 border-b border-gray-700">
+            <div className="p-2 border-b border-zinc-900 bg-zinc-950/80">
               <div className="relative">
-                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
                 <input
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Cerca per codice o descrizione..."
                   autoFocus
-                  className="w-full pl-8 pr-3 py-2 text-sm bg-[#0A0F1E] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#38BDF8]"
+                  className="w-full pl-8 pr-3 py-2 text-xs bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-550/20"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1 px-1">
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mt-1.5 px-1">
                 {mode === 'primary' ? 'Seleziona il codice ATECO primario' : 'Aggiungi codice secondario'}
               </p>
             </div>
 
             {/* Results list */}
-            <ul className="max-h-52 overflow-y-auto">
+            <ul className="max-h-52 overflow-y-auto bg-zinc-950">
               {filtered.length === 0 && (
-                <li className="px-3 py-4 text-center text-gray-500 text-sm">Nessun risultato</li>
+                <li className="px-3 py-4 text-center text-zinc-500 text-xs font-medium">Nessun risultato</li>
               )}
               {filtered.map(c => (
                 <li key={c.codice}>
@@ -151,12 +151,12 @@ export default function AtecoSelector({
                     type="button"
                     onClick={() => handleSelect(c.codice)}
                     disabled={c.codice === primaryValue || secondaryValues.includes(c.codice)}
-                    className={`w-full text-left px-3 py-2 text-sm hover:bg-[#38BDF8]/10 transition-colors flex items-center gap-2 ${
-                      c.codice === primaryValue ? 'text-[#38BDF8] bg-[#38BDF8]/5' :
-                      secondaryValues.includes(c.codice) ? 'text-gray-500' : 'text-white'
+                    className={`w-full text-left px-3 py-2 text-xs hover:bg-zinc-900/50 transition-colors flex items-center gap-2 ${
+                      c.codice === primaryValue ? 'text-indigo-400 bg-indigo-500/5 font-semibold' :
+                      secondaryValues.includes(c.codice) ? 'text-zinc-600' : 'text-zinc-200'
                     }`}
                   >
-                    <span className="font-mono text-[#38BDF8] w-14 shrink-0">{c.codice}</span>
+                    <span className="font-mono text-indigo-400 w-14 shrink-0 font-semibold">{c.codice}</span>
                     <span className="truncate">{c.descrizione}</span>
                   </button>
                 </li>

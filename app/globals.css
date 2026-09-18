@@ -1,45 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;800&display=swap');
 @import "tailwindcss";
 
 @theme inline {
-  --color-brand-dark: #0A0F1E;
-  --color-brand-navy: #0F1F3D;
-  --color-brand-cyan: #38BDF8;
-  --color-background: #0A0F1E;
-  --color-foreground: #FFFFFF;
-  --font-sans: 'Poppins', sans-serif;
+  --color-brand-dark: #09090b;
+  --color-brand-navy: #18181b;
+  --color-brand-cyan: #6366f1;
+  --color-background: #09090b;
+  --color-foreground: #fafafa;
+  --font-sans: var(--font-geist-sans), sans-serif;
 }
 
 :root {
-  --brand-dark: #0A0F1E;
-  --brand-navy: #0F1F3D;
-  --brand-cyan: #38BDF8;
+  --brand-dark: #09090b;
+  --brand-navy: #18181b;
+  --brand-cyan: #6366f1;
 }
 
 body {
-  background-color: #0A0F1E;
-  color: #FFFFFF;
-  font-family: 'Poppins', sans-serif;
+  background-color: #09090b;
+  color: #fafafa;
+  font-family: var(--font-geist-sans), sans-serif;
 }
 
 input, select, textarea {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid #27272a;
+  color: #fafafa;
   border-radius: 8px;
 }
 
 input:focus, select:focus, textarea:focus {
-  border-color: #38BDF8;
+  border-color: #6366f1;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 input::placeholder, textarea::placeholder {
-  color: rgba(255, 255, 255, 0.35);
+  color: #52525b;
 }
 
 select option {
-  background-color: #0F1F3D;
-  color: #FFFFFF;
+  background-color: #09090b;
+  color: #fafafa;
 }
+

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { UploadCloud, FileText, X, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export default function VisuraUploadPage() {
   const router = useRouter();
@@ -87,15 +87,15 @@ export default function VisuraUploadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] text-white flex flex-col">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0A0F1E]/90 backdrop-blur border-b border-[#38BDF8]/15 px-6 py-4">
+      <header className="sticky top-0 z-50 bg-[#09090b]/80 backdrop-blur border-b border-zinc-800 px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Link href="/" className="text-xl">
             <span className="font-extrabold text-white">Incent</span>
-            <span className="font-extrabold text-[#38BDF8]">io</span>
+            <span className="font-extrabold text-zinc-400">io</span>
           </Link>
-          <nav className="hidden sm:flex items-center gap-6 text-sm font-medium text-white/60">
+          <nav className="hidden sm:flex items-center gap-6 text-sm font-medium text-zinc-400">
             <Link href="/candidature" className="hover:text-white transition-colors">Candidature</Link>
           </nav>
         </div>
@@ -106,8 +106,8 @@ export default function VisuraUploadPage() {
         <div className="w-full max-w-xl">
           {/* Title */}
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-extrabold text-white mb-2">Visura Camerale</h1>
-            <p className="text-white/50 text-sm">
+            <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2">Visura Camerale</h1>
+            <p className="text-zinc-400 text-sm">
               Carica la visura camerale della tua azienda in formato PDF.<br />
               Analizzeremo i tuoi dati e troveremo i bandi più compatibili.
             </p>
@@ -119,8 +119,8 @@ export default function VisuraUploadPage() {
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onClick={() => !file && !uploading && fileInputRef.current?.click()}
-            className={`relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer
-              ${dragging ? 'border-[#38BDF8] bg-[#38BDF8]/10' : 'border-white/20 hover:border-[#38BDF8]/50 hover:bg-white/5'}
+            className={`relative rounded-xl border border-dashed transition-all duration-200 cursor-pointer
+              ${dragging ? 'border-zinc-400 bg-zinc-900/50' : 'border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/20'}
               ${file ? 'cursor-default' : ''}
               p-10 flex flex-col items-center gap-4 text-center`}
           >
@@ -136,30 +136,30 @@ export default function VisuraUploadPage() {
             {!file ? (
               <>
                 <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-colors
-                  ${dragging ? 'bg-[#38BDF8]/20' : 'bg-white/5'}`}>
-                  <UploadCloud size={32} className={dragging ? 'text-[#38BDF8]' : 'text-white/40'} />
+                  ${dragging ? 'bg-zinc-900' : 'bg-zinc-900/30 border border-zinc-800'}`}>
+                  <UploadCloud size={28} className={dragging ? 'text-zinc-100' : 'text-zinc-500'} />
                 </div>
                 <div>
-                  <p className="text-white font-semibold">Trascina qui il tuo PDF</p>
-                  <p className="text-white/40 text-sm mt-1">oppure clicca per selezionare il file</p>
+                  <p className="text-zinc-200 font-semibold">Trascina qui il tuo PDF</p>
+                  <p className="text-zinc-500 text-sm mt-1">oppure clicca per selezionare il file</p>
                 </div>
-                <p className="text-xs text-white/30">Solo PDF · max 10 MB</p>
+                <p className="text-xs text-zinc-600">Solo PDF · max 10 MB</p>
               </>
             ) : (
               <>
-                <div className="w-14 h-14 rounded-2xl bg-[#38BDF8]/10 flex items-center justify-center">
-                  <FileText size={28} className="text-[#38BDF8]" />
+                <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                  <FileText size={24} className="text-zinc-300" />
                 </div>
                 <div className="flex-1 min-w-0 text-center">
-                  <p className="text-white font-semibold truncate max-w-xs mx-auto">{file.name}</p>
-                  <p className="text-white/40 text-sm mt-0.5">
+                  <p className="text-zinc-200 font-semibold truncate max-w-xs mx-auto">{file.name}</p>
+                  <p className="text-zinc-500 text-sm mt-0.5">
                     {(file.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
                 {!uploading && (
                   <button
                     onClick={(e) => { e.stopPropagation(); setFile(null); setProgress(0); }}
-                    className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-colors"
+                    className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-zinc-900 text-zinc-500 hover:text-zinc-300 transition-colors"
                     title="Rimuovi file"
                   >
                     <X size={16} />
@@ -172,13 +172,13 @@ export default function VisuraUploadPage() {
           {/* Progress bar */}
           {uploading && (
             <div className="mt-5">
-              <div className="flex justify-between text-xs text-white/50 mb-1.5">
+              <div className="flex justify-between text-xs text-zinc-500 mb-1.5">
                 <span>Upload in corso…</span>
                 <span>{progress}%</span>
               </div>
-              <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+              <div className="h-1 bg-zinc-900 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#38BDF8] rounded-full transition-all duration-300"
+                  className="h-full bg-zinc-50 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -187,7 +187,7 @@ export default function VisuraUploadPage() {
 
           {/* Error */}
           {error && (
-            <div className="mt-4 flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+            <div className="mt-4 flex items-start gap-3 bg-red-950/20 border border-red-900/30 rounded-xl p-4">
               <AlertCircle size={18} className="text-red-400 mt-0.5 shrink-0" />
               <div>
                 <p className="text-red-300 text-sm font-semibold">Errore</p>
@@ -200,17 +200,17 @@ export default function VisuraUploadPage() {
           <button
             onClick={handleUpload}
             disabled={!file || uploading}
-            className={`mt-6 w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2
+            className={`mt-6 w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2
               ${file && !uploading
-                ? 'bg-[#38BDF8] text-[#0A0F1E] hover:opacity-90 shadow-lg shadow-[#38BDF8]/20 cursor-pointer'
-                : 'bg-white/10 text-white/30 cursor-not-allowed'
+                ? 'bg-zinc-50 text-zinc-950 hover:bg-zinc-200 cursor-pointer'
+                : 'bg-zinc-900 text-zinc-600 border border-zinc-800/80 cursor-not-allowed'
               }`}
           >
             <UploadCloud size={18} />
             {uploading ? 'Upload in corso…' : 'Analizza la Visura'}
           </button>
 
-          <p className="text-center text-xs text-white/25 mt-4">
+          <p className="text-center text-xs text-zinc-600 mt-4">
             I dati vengono elaborati in modo sicuro e non vengono condivisi con terze parti.
           </p>
         </div>

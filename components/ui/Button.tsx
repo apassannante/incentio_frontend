@@ -12,13 +12,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             <button
                 ref={ref}
                 className={clsx(
-                    'inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0A0F1E] disabled:opacity-50 disabled:cursor-not-allowed',
+                    'inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#09090b] disabled:opacity-50 disabled:cursor-not-allowed',
                     {
-                        'bg-[#38BDF8] text-[#0A0F1E] hover:opacity-90 focus:ring-[#38BDF8] active:scale-[0.98]':
+                        'bg-zinc-100 text-zinc-950 hover:bg-zinc-200 border border-zinc-200/50 focus:ring-zinc-400 active:scale-[0.98]':
                             variant === 'primary',
-                        'bg-transparent text-[#38BDF8] border-2 border-[#38BDF8] hover:bg-[#38BDF8]/10 focus:ring-[#38BDF8]':
+                        'bg-zinc-900/40 text-zinc-350 border border-zinc-800 hover:bg-zinc-850 hover:text-white focus:ring-zinc-700':
                             variant === 'secondary',
-                        'bg-transparent text-[#38BDF8] hover:bg-[#38BDF8]/10 focus:ring-[#38BDF8]':
+                        'bg-transparent text-zinc-400 hover:bg-zinc-900/50 hover:text-white focus:ring-zinc-700':
                             variant === 'ghost',
                     },
                     {

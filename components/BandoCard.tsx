@@ -14,9 +14,9 @@ function tipoColor(tipo: TipoBando): 'blue' | 'green' | 'orange' {
 }
 
 function tipoIcon(tipo: TipoBando) {
-    if (tipo === 'tech') return <Cpu size={14} />;
-    if (tipo === 'green') return <Leaf size={14} />;
-    return <Users size={14} />;
+    if (tipo === 'tech') return <Cpu size={12} />;
+    if (tipo === 'green') return <Leaf size={12} />;
+    return <Users size={12} />;
 }
 
 function tipoLabel(tipo: TipoBando) {
@@ -74,12 +74,12 @@ export default function BandoCard({ match, profileId }: BandoCardProps) {
     }
 
     return (
-        <Card hover className="flex flex-col gap-4">
+        <Card hover className="flex flex-col gap-4 font-sans">
             {/* Top row */}
             <div className="flex items-start justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2 flex-wrap">
                     <Badge color={tipoColor(bando.tipo_bando)}>
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1.5">
                             {tipoIcon(bando.tipo_bando)}
                             {tipoLabel(bando.tipo_bando)}
                         </span>
@@ -88,43 +88,43 @@ export default function BandoCard({ match, profileId }: BandoCardProps) {
                         Complessità {bando.complessita_candidatura}
                     </Badge>
                 </div>
-                <div className="flex items-center gap-1 text-xs font-semibold text-[#38BDF8] bg-[#38BDF8]/10 px-2 py-1 rounded-full border border-[#38BDF8]/25">
+                <div className="flex items-center gap-1 text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
                     <span>Match {score}%</span>
                 </div>
             </div>
 
-            {/* Title + ente */}
+            {/* Title + Ente */}
             <div>
-                <h3 className="font-bold text-white text-base leading-snug">{bando.titolo}</h3>
-                <p className="text-xs text-white/50 mt-0.5">{bando.ente_erogatore}</p>
+                <h3 className="font-bold text-white text-sm leading-snug">{bando.titolo}</h3>
+                <p className="text-[10px] text-zinc-500 font-semibold mt-1">{bando.ente_erogatore}</p>
             </div>
 
             {/* Key numbers */}
-            <div className="flex gap-4 flex-wrap">
+            <div className="flex gap-6 flex-wrap">
                 <div>
-                    <div className="text-2xl font-black text-[#38BDF8]">
+                    <div className="text-xl font-bold text-white">
                         {bando.percentuale_fondo_perduto}%
                     </div>
-                    <div className="text-xs text-white/40">fondo perduto</div>
+                    <div className="text-[10px] text-zinc-550 font-bold uppercase tracking-wider mt-0.5">fondo perduto</div>
                 </div>
                 <div>
-                    <div className="text-2xl font-black text-[#38BDF8]">
+                    <div className="text-xl font-bold text-white">
                         {formatEuro(bando.importo_max_euro)}
                     </div>
-                    <div className="text-xs text-white/40">importo massimo</div>
+                    <div className="text-[10px] text-zinc-550 font-bold uppercase tracking-wider mt-0.5">importo massimo</div>
                 </div>
             </div>
 
             {/* Motivo match */}
-            <p className="text-xs text-white/60 bg-white/5 rounded-lg px-3 py-2 border border-[#38BDF8]/10">
+            <p className="text-xs text-zinc-300 bg-zinc-950/40 rounded-lg px-3.5 py-2.5 border border-zinc-850 leading-relaxed font-normal">
                 💡 {motivo_match}
             </p>
 
             {/* Footer */}
-            <div className="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-[#38BDF8]/10">
-                <div className="flex items-center gap-1.5 text-xs font-medium">
-                    <Calendar size={12} className="text-[#38BDF8]" />
-                    <span className={giorni <= 14 ? 'text-red-400 font-semibold' : 'text-[#38BDF8]'}>
+            <div className="flex items-center justify-between flex-wrap gap-3 pt-3.5 border-t border-zinc-900">
+                <div className="flex items-center gap-1.5 text-xs font-semibold">
+                    <Calendar size={13} className="text-zinc-500" />
+                    <span className={giorni <= 14 ? 'text-red-450 text-red-400 font-semibold' : 'text-zinc-400'}>
                         {giorni <= 0
                             ? 'Scaduto'
                             : giorni === 1
@@ -141,7 +141,7 @@ export default function BandoCard({ match, profileId }: BandoCardProps) {
                         size="sm"
                         onClick={handleCandidati}
                         disabled={applying}
-                        className="gap-1"
+                        className="gap-1.5"
                     >
                         {applying ? (
                             <><Loader2 size={12} className="animate-spin" /> Avvio...</>
@@ -152,7 +152,7 @@ export default function BandoCard({ match, profileId }: BandoCardProps) {
                 </div>
             </div>
             {applyError && (
-                <p className="text-xs text-red-400 text-right">{applyError}</p>
+                <p className="text-[10px] font-semibold text-red-400 text-right">{applyError}</p>
             )}
         </Card>
     );

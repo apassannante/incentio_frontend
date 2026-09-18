@@ -83,6 +83,9 @@ export async function startApplication(
 export interface DocumentoStatus {
     nome: string;
     stato: 'gia_pronto' | 'da_preparare' | 'da_verificare';
+    slug?: string;
+    generato?: boolean;
+    contenuto?: string | null;
 }
 
 export interface TimelineStep {

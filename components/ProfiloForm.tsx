@@ -188,19 +188,19 @@ export default function ProfiloForm() {
     };
 
     return (
-        <div className="w-full max-w-xl mx-auto">
+        <div className="w-full max-w-xl mx-auto font-sans text-zinc-100">
             {/* Progress */}
             <div className="mb-8">
-                <div className="flex justify-between text-xs text-white/40 mb-2">
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">
                     {STEP_LABELS.map((label, i) => (
-                        <span key={label} className={i + 1 <= step ? 'text-[#38BDF8] font-semibold' : ''}>
+                        <span key={label} className={i + 1 <= step ? 'text-indigo-400' : ''}>
                             {label}
                         </span>
                     ))}
                 </div>
-                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-zinc-900 border border-zinc-850 rounded-full overflow-hidden">
                     <div
-                        className="h-full bg-[#38BDF8] rounded-full transition-all duration-500"
+                        className="h-full bg-indigo-500 rounded-full transition-all duration-500"
                         style={{ width: `${progress}%` }}
                     />
                 </div>
@@ -209,25 +209,25 @@ export default function ProfiloForm() {
             {/* Step 1 */}
             {step === 1 && (
                 <div className="space-y-5">
-                    <h2 className="text-xl font-bold text-white">La tua azienda</h2>
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">La tua azienda</h2>
 
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm font-medium text-white/80">Settore ATECO</label>
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Settore ATECO</label>
 
                         {/* Ricerca */}
                         <div className="relative">
-                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
                             <input
                                 type="text"
                                 placeholder="Cerca settore..."
                                 value={settoreSearch}
                                 onChange={(e) => setSettoreSearch(e.target.value)}
-                                className="w-full pl-8 pr-3.5 py-2.5 rounded-lg border border-[#38BDF8]/20 bg-white/5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8] focus:border-[#38BDF8]"
+                                className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-zinc-800 bg-zinc-950/40 text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-550/20 focus:border-indigo-500"
                             />
                         </div>
 
                         {/* Lista filtrata */}
-                        <div className="max-h-52 overflow-y-auto rounded-lg border border-[#38BDF8]/20 bg-[#0A0F1E]">
+                        <div className="max-h-52 overflow-y-auto rounded-lg border border-zinc-800 bg-zinc-950">
                             {(() => {
                                 const q = settoreSearch.toLowerCase();
                                 const gruppi = q
@@ -236,7 +236,7 @@ export default function ProfiloForm() {
                                 return gruppi.map((g) => (
                                     g.voci.length === 0 ? null :
                                     <div key={g.sezione}>
-                                        <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40 bg-[#0F1F3D] sticky top-0">
+                                        <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-zinc-500 bg-zinc-900 sticky top-0 border-b border-zinc-850">
                                             {g.sezione}
                                         </div>
                                         {g.voci.map((s) => (
@@ -244,10 +244,10 @@ export default function ProfiloForm() {
                                                 key={s.value}
                                                 type="button"
                                                 onClick={() => { setForm((f) => ({ ...f, settore_ateco: s.value })); setSettoreSearch(''); }}
-                                                className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                                                className={`w-full text-left px-3 py-2 text-xs transition-colors ${
                                                     form.settore_ateco === s.value
-                                                        ? 'bg-[#38BDF8]/10 text-[#38BDF8] font-semibold'
-                                                        : 'text-white/80 hover:bg-white/5'
+                                                        ? 'bg-indigo-500/10 text-indigo-400 font-semibold'
+                                                        : 'text-zinc-300 hover:bg-zinc-900/50'
                                                 }`}
                                             >
                                                 {s.label}
@@ -260,14 +260,14 @@ export default function ProfiloForm() {
 
                         {/* Selezione corrente */}
                         {form.settore_ateco && (
-                            <p className="text-xs text-[#38BDF8] font-medium mt-0.5">
+                            <p className="text-xs text-indigo-400 font-semibold mt-1">
                                 ✓ {SETTORI_ATECO_FLAT.find(s => s.value === form.settore_ateco)?.label ?? form.settore_ateco}
                             </p>
                         )}
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-white/80">Dimensione azienda</label>
+                        <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Dimensione azienda</label>
                         <div className="grid grid-cols-2 gap-2">
                             {([
                                 { value: 'micro', label: 'Micro', sub: '<10 dipendenti' },
@@ -279,13 +279,13 @@ export default function ProfiloForm() {
                                     key={opt.value}
                                     type="button"
                                     onClick={() => setForm((f) => ({ ...f, dimensione: opt.value }))}
-                                    className={`p-3 rounded-lg border-2 text-left transition-all ${form.dimensione === opt.value
-                                            ? 'border-[#38BDF8] bg-[#38BDF8]/10'
-                                            : 'border-white/10 bg-white/5 hover:border-[#38BDF8]/40'
+                                    className={`p-3.5 rounded-lg border text-left transition-all ${form.dimensione === opt.value
+                                            ? 'border-indigo-500 bg-indigo-500/10'
+                                            : 'border-zinc-800 bg-zinc-950/40 hover:border-zinc-700'
                                         }`}
                                 >
-                                    <div className="font-semibold text-sm text-white">{opt.label}</div>
-                                    <div className="text-xs text-white/40">{opt.sub}</div>
+                                    <div className={`font-semibold text-xs ${form.dimensione === opt.value ? 'text-indigo-400' : 'text-zinc-200'}`}>{opt.label}</div>
+                                    <div className="text-[10px] text-zinc-500 font-medium mt-0.5">{opt.sub}</div>
                                 </button>
                             ))}
                         </div>
@@ -302,12 +302,12 @@ export default function ProfiloForm() {
                         onChange={(e) => setForm((f) => ({ ...f, anno_fondazione: e.target.value }))}
                     />
 
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm font-medium text-white/80">Provincia</label>
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Provincia</label>
                         <select
                             value={form.provincia}
                             onChange={(e) => setForm((f) => ({ ...f, provincia: e.target.value }))}
-                            className="w-full px-3.5 py-2.5 rounded-lg border border-[#38BDF8]/20 bg-white/5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
+                            className="w-full px-3.5 py-2.5 rounded-lg border border-zinc-800 bg-zinc-950/40 text-zinc-150 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-550/20 focus:border-indigo-500"
                         >
                             <option value="">Seleziona provincia...</option>
                             {PROVINCE_LOMBARDE.map((p) => (
@@ -321,38 +321,40 @@ export default function ProfiloForm() {
             {/* Step 2 */}
             {step === 2 && (
                 <div className="space-y-5">
-                    <h2 className="text-xl font-bold text-white">I tuoi obiettivi</h2>
+                    <h2 className="text-lg font-bold text-white">I tuoi obiettivi</h2>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-white/80">
-                            Cosa vuoi finanziare? <span className="text-white/40 font-normal">(scegli tutti)</span>
+                        <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
+                            Cosa vuoi finanziare? <span className="text-zinc-500 font-normal lowercase">(scegli tutti)</span>
                         </label>
                         {OBIETTIVI.map((ob) => (
-                            <CheckboxPrimitive.Root
-                                key={ob.value}
-                                id={ob.value}
-                                checked={form.obiettivi.includes(ob.value)}
-                                onCheckedChange={() => toggleObiettivo(ob.value)}
-                                className={`flex items-center gap-3 p-3.5 rounded-lg border-2 cursor-pointer transition-all text-left ${form.obiettivi.includes(ob.value)
-                                        ? 'border-[#38BDF8] bg-[#38BDF8]/10'
-                                        : 'border-white/10 bg-white/5 hover:border-[#38BDF8]/40'
-                                    }`}
-                            >
-                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${form.obiettivi.includes(ob.value) ? 'border-[#38BDF8] bg-[#38BDF8]' : 'border-white/30'
-                                    }`}>
-                                    <CheckboxPrimitive.Indicator>
-                                        <Check size={12} className="text-[#0A0F1E]" />
-                                    </CheckboxPrimitive.Indicator>
-                                </div>
-                                <label htmlFor={ob.value} className="text-sm font-medium text-white cursor-pointer">
-                                    {ob.label}
-                                </label>
-                            </CheckboxPrimitive.Root>
+                          <CheckboxPrimitive.Root
+                              key={ob.value}
+                              id={ob.value}
+                              checked={form.obiettivi.includes(ob.value)}
+                              onCheckedChange={() => toggleObiettivo(ob.value)}
+                              className={`flex items-center gap-3 p-3.5 rounded-lg border cursor-pointer transition-all text-left ${
+                                  form.obiettivi.includes(ob.value)
+                                      ? 'border-indigo-500 bg-indigo-500/10'
+                                      : 'border-zinc-800 bg-zinc-950/40 hover:border-zinc-700'
+                              }`}
+                          >
+                              <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-all ${
+                                  form.obiettivi.includes(ob.value) ? 'border-indigo-500 bg-indigo-500' : 'border-zinc-750 bg-zinc-950'
+                              }`}>
+                                  <CheckboxPrimitive.Indicator>
+                                      <Check size={11} className="text-white" />
+                                  </CheckboxPrimitive.Indicator>
+                              </div>
+                              <label htmlFor={ob.value} className={`text-xs font-semibold cursor-pointer ${form.obiettivi.includes(ob.value) ? 'text-indigo-400' : 'text-zinc-200'}`}>
+                                  {ob.label}
+                              </label>
+                          </CheckboxPrimitive.Root>
                         ))}
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-white/80">Budget per co-investimento</label>
+                        <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Budget per co-investimento</label>
                         {([
                             { value: '<10k', label: 'Meno di €10.000' },
                             { value: '10k-50k', label: '€10.000 – €50.000' },
@@ -363,9 +365,9 @@ export default function ProfiloForm() {
                                 key={opt.value}
                                 type="button"
                                 onClick={() => setForm((f) => ({ ...f, budget_coinvestimento: opt.value }))}
-                                className={`p-3.5 rounded-lg border-2 text-left text-sm transition-all ${form.budget_coinvestimento === opt.value
-                                        ? 'border-[#38BDF8] bg-[#38BDF8]/10 font-semibold text-[#38BDF8]'
-                                        : 'border-white/10 bg-white/5 hover:border-[#38BDF8]/40 text-white'
+                                className={`p-3.5 rounded-lg border text-left text-xs font-semibold transition-all ${form.budget_coinvestimento === opt.value
+                                        ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400'
+                                        : 'border-zinc-800 bg-zinc-950/40 hover:border-zinc-700 text-zinc-300'
                                     }`}
                             >
                                 {opt.label}
@@ -374,7 +376,7 @@ export default function ProfiloForm() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-white/80">Fatturato annuo</label>
+                        <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Fatturato annuo</label>
                         {([
                             { value: '<500k', label: 'Meno di €500.000' },
                             { value: '500k-2M', label: '€500k – €2 milioni' },
@@ -385,9 +387,9 @@ export default function ProfiloForm() {
                                 key={opt.value}
                                 type="button"
                                 onClick={() => setForm((f) => ({ ...f, fatturato_range: opt.value }))}
-                                className={`p-3.5 rounded-lg border-2 text-left text-sm transition-all ${form.fatturato_range === opt.value
-                                        ? 'border-[#38BDF8] bg-[#38BDF8]/10 font-semibold text-[#38BDF8]'
-                                        : 'border-white/10 bg-white/5 hover:border-[#38BDF8]/40 text-white'
+                                className={`p-3.5 rounded-lg border text-left text-xs font-semibold transition-all ${form.fatturato_range === opt.value
+                                        ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400'
+                                        : 'border-zinc-800 bg-zinc-950/40 hover:border-zinc-700 text-zinc-300'
                                     }`}
                             >
                                 {opt.label}
@@ -400,13 +402,13 @@ export default function ProfiloForm() {
             {/* Step 3 */}
             {step === 3 && (
                 <div className="space-y-5">
-                    <h2 className="text-xl font-bold text-white">Ultima domanda</h2>
+                    <h2 className="text-lg font-bold text-white">Ultima domanda</h2>
 
                     <div className="flex flex-col gap-3">
-                        <label className="text-sm font-medium text-white/80">
+                        <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
                             Avete già ricevuto contributi pubblici negli ultimi 3 anni?
                         </label>
-                        <div className="bg-[#38BDF8]/5 border border-[#38BDF8]/20 rounded-lg p-3 text-xs text-[#38BDF8]/80">
+                        <div className="bg-indigo-950/10 border border-indigo-900/20 rounded-lg p-3 text-xs text-indigo-400 leading-relaxed font-medium">
                             <strong>Cos'è il de minimis?</strong> La normativa UE prevede un limite massimo di €300.000
                             in 3 anni per aiuti &quot;de minimis&quot; a impresa. Sapere se avete già ricevuto contributi
                             ci aiuta a filtrare i bandi più adatti.
@@ -420,9 +422,9 @@ export default function ProfiloForm() {
                                 key={String(opt.value)}
                                 type="button"
                                 onClick={() => setForm((f) => ({ ...f, de_minimis: opt.value }))}
-                                className={`p-3.5 rounded-lg border-2 text-left text-sm transition-all ${form.de_minimis === opt.value
-                                        ? 'border-[#38BDF8] bg-[#38BDF8]/10 font-semibold text-[#38BDF8]'
-                                        : 'border-white/10 bg-white/5 hover:border-[#38BDF8]/40 text-white'
+                                className={`p-3.5 rounded-lg border text-left text-xs font-semibold transition-all ${form.de_minimis === opt.value
+                                        ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400'
+                                        : 'border-zinc-800 bg-zinc-950/40 hover:border-zinc-700 text-zinc-300'
                                     }`}
                             >
                                 {opt.label}
@@ -439,12 +441,12 @@ export default function ProfiloForm() {
                         onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                     />
 
-                    {error && <p className="text-sm text-red-400">{error}</p>}
+                    {error && <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/30 rounded-lg px-3.5 py-2.5 font-medium">{error}</p>}
                 </div>
             )}
 
             {/* Error (steps 1 & 2) */}
-            {step < 3 && error && <p className="text-sm text-red-400 mt-4">{error}</p>}
+            {step < 3 && error && <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/30 rounded-lg px-3.5 py-2.5 font-medium mt-4">{error}</p>}
 
             {/* Nav */}
             <div className="flex gap-3 mt-8">
@@ -452,17 +454,17 @@ export default function ProfiloForm() {
                     <Button
                         variant="secondary"
                         onClick={() => { setError(''); setStep((s) => s - 1); }}
-                        className="flex-1 gap-1"
+                        className="flex-1 gap-1 text-xs py-2.5"
                     >
-                        <ChevronLeft size={16} /> Indietro
+                        <ChevronLeft size={14} /> Indietro
                     </Button>
                 )}
                 {step < 3 ? (
-                    <Button onClick={handleNext} className="flex-1 gap-1">
-                        Avanti <ChevronRight size={16} />
+                    <Button onClick={handleNext} className="flex-1 gap-1 text-xs py-2.5">
+                        Avanti <ChevronRight size={14} />
                     </Button>
                 ) : (
-                    <Button onClick={handleSubmit} disabled={loading} className="flex-1">
+                    <Button onClick={handleSubmit} disabled={loading} className="flex-1 text-xs py-2.5">
                         {loading ? 'Ricerca bandi...' : 'Trova i miei bandi →'}
                     </Button>
                 )}

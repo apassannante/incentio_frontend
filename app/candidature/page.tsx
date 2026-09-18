@@ -49,28 +49,28 @@ export default function CandidaturePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] text-white">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 antialiased">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0A0F1E]/90 backdrop-blur border-b border-[#38BDF8]/15 px-6 py-4">
+      <header className="sticky top-0 z-50 bg-[#09090b]/80 backdrop-blur border-b border-zinc-800 px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href={userId ? `/risultati?id=${userId}` : '/risultati'}
-              className="flex items-center gap-1.5 text-sm text-white/50 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors"
             >
               <ArrowLeft size={16} />
               Bandi
             </Link>
             <span className="text-xl">
-              <span className="font-extrabold text-white">Incent</span><span className="font-extrabold text-[#38BDF8]">io</span>
+              <span className="font-extrabold text-white">Incent</span><span className="font-extrabold text-zinc-400">io</span>
             </span>
           </div>
-          <nav className="hidden sm:flex items-center gap-6 text-sm font-medium text-white/60">
+          <nav className="hidden sm:flex items-center gap-6 text-sm font-medium text-zinc-400">
             <Link href={userId ? `/risultati?id=${userId}` : '/risultati'} className="hover:text-white transition-colors">Bandi</Link>
-            <Link href="/candidature" className="text-[#38BDF8] font-semibold border-b-2 border-[#38BDF8] pb-0.5">
+            <Link href="/candidature" className="text-white font-semibold border-b-2 border-white pb-0.5">
               Candidature
             </Link>
-            <button onClick={() => router.push('/visura')} className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-cyan-400 border border-cyan-400/40 rounded-lg hover:border-cyan-400 hover:bg-cyan-400/10 transition-all">
+            <button onClick={() => router.push('/visura')} className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-zinc-300 border border-zinc-800 rounded-lg hover:border-zinc-700 hover:bg-zinc-900/50 transition-all bg-zinc-900/20">
               📄 Analizza con visura
             </button>
             <LogoutButton />
@@ -82,8 +82,8 @@ export default function CandidaturePage() {
       <main className="max-w-5xl mx-auto px-6 py-10">
         {/* Page title */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Le tue candidature</h1>
-          <p className="text-sm text-white/50 mt-1">
+          <h1 className="text-2xl font-extrabold text-white">Le tue candidature</h1>
+          <p className="text-sm text-zinc-400 mt-1">
             Monitora lo stato di ogni pacchetto candidatura avviato.
           </p>
         </div>
@@ -101,8 +101,8 @@ export default function CandidaturePage() {
         {!loading && error && (
           <div className="flex flex-col items-center gap-3 py-24 text-center">
             <AlertCircle size={36} className="text-red-400" />
-            <p className="text-white/60">{error}</p>
-            <Link href="/auth" className="text-sm text-[#38BDF8] font-semibold hover:underline">
+            <p className="text-zinc-400">{error}</p>
+            <Link href="/auth" className="text-sm text-zinc-300 font-semibold hover:underline hover:text-white">
               Accedi
             </Link>
           </div>
@@ -111,18 +111,18 @@ export default function CandidaturePage() {
         {/* Empty state */}
         {!loading && !error && applications.length === 0 && (
           <div className="flex flex-col items-center gap-5 py-24 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-[#38BDF8]/10 flex items-center justify-center">
-              <FileText size={28} className="text-[#38BDF8]" />
+            <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+              <FileText size={28} className="text-zinc-400" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Nessuna candidatura ancora</h2>
-              <p className="text-sm text-white/50 mt-1 max-w-sm mx-auto">
+              <p className="text-sm text-zinc-400 mt-1 max-w-sm mx-auto">
                 Non hai ancora avviato nessuna candidatura. Esplora i bandi compatibili con la tua azienda e inizia.
               </p>
             </div>
             <Link
               href={userId ? `/risultati?id=${userId}` : '/risultati'}
-              className="inline-flex items-center gap-2 bg-[#38BDF8] text-[#0A0F1E] font-bold px-6 py-3 rounded-xl hover:opacity-90 transition-all shadow-lg shadow-[#38BDF8]/15"
+              className="inline-flex items-center gap-2 bg-zinc-100 text-zinc-950 font-bold px-6 py-3 rounded-xl hover:bg-zinc-200 transition-all border border-zinc-200/50 shadow-lg shadow-zinc-900/50"
             >
               Esplora i bandi <ArrowRight size={16} />
             </Link>
@@ -132,7 +132,7 @@ export default function CandidaturePage() {
         {/* Card list */}
         {!loading && !error && applications.length > 0 && (
           <>
-            <p className="text-sm text-white/40 mb-4">{applications.length} candidatura{applications.length !== 1 ? 'e' : ''}</p>
+            <p className="text-sm text-zinc-550 mb-4" style={{ color: '#71717a' }}>{applications.length} candidatura{applications.length !== 1 ? 'e' : ''}</p>
             <div className="flex flex-col gap-4">
               {applications.map((app) => (
                 <ApplicationCard key={app.id} app={app} />

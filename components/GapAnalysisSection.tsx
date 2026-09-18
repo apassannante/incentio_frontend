@@ -41,25 +41,25 @@ export default function GapAnalysisSection({ bandoId, profileId }: GapAnalysisSe
 
   if (!loading && !analysis) {
     return (
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 flex flex-col items-center text-center gap-4">
-        <h2 className="text-lg font-bold text-[#1C1C1C]">Pronto per candidarti?</h2>
-        <p className="text-sm text-gray-500 max-w-md">
+      <div className="bg-zinc-900/20 rounded-2xl p-6 border border-zinc-800 flex flex-col items-center text-center gap-4 shadow-sm">
+        <h2 className="text-sm font-bold text-white uppercase tracking-widest">Pronto per candidarti?</h2>
+        <p className="text-xs text-zinc-400 max-w-md font-normal leading-relaxed">
           Prima di generare il pacchetto, verifichiamo la compatibilità esatta della tua azienda con i requisiti del bando.
         </p>
-        <Button onClick={handleAnalyze} className="gap-2 text-base px-6 py-3">
-          Genera pacchetto candidatura <ArrowRight size={18} />
+        <Button onClick={handleAnalyze} className="gap-2 text-xs font-bold px-5 py-2.5">
+          Genera pacchetto candidatura <ArrowRight size={14} />
         </Button>
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p className="text-xs text-red-400 font-semibold">{error}</p>}
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl p-8 border border-gray-100 flex flex-col items-center text-center gap-4">
-        <Loader2 className="animate-spin text-[#1A7A4A] mb-2" size={40} />
-        <h2 className="text-lg font-bold text-[#1C1C1C]">Analizzo la compatibilità della tua azienda con questo bando...</h2>
-        <p className="text-sm text-gray-500">
+      <div className="bg-zinc-900/20 rounded-2xl p-8 border border-zinc-800 flex flex-col items-center text-center gap-4 shadow-sm">
+        <Loader2 className="animate-spin text-zinc-500 mb-2" size={32} />
+        <h2 className="text-sm font-bold text-white uppercase tracking-widest">Analizzo la compatibilità...</h2>
+        <p className="text-xs text-zinc-400 font-normal">
           Stiamo confrontando i tuoi dati con i requisiti minimi del bando.
         </p>
       </div>
@@ -72,18 +72,18 @@ export default function GapAnalysisSection({ bandoId, profileId }: GapAnalysisSe
     // Panel 4. HTTP 422 (ammissibile: false)
     if (!ammissibile) {
       return (
-        <div className="bg-red-50 rounded-2xl p-6 border border-red-100 flex flex-col gap-5">
-          <div className="flex items-center gap-3 text-red-700">
-            <XCircle size={24} />
-            <h2 className="text-lg font-bold">La tua azienda non soddisfa i requisiti minimi</h2>
+        <div className="bg-red-950/10 rounded-2xl p-6 border border-red-900/20 flex flex-col gap-5 text-red-300">
+          <div className="flex items-center gap-3 text-red-400">
+            <XCircle size={20} />
+            <h2 className="text-sm font-bold uppercase tracking-wider">La tua azienda non soddisfa i requisiti minimi</h2>
           </div>
           
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-red-800">Requisiti bloccanti:</h3>
+            <h3 className="text-xs font-bold text-red-400 uppercase tracking-wide">Requisiti bloccanti:</h3>
             <ul className="space-y-2">
               {requisiti_mancanti?.map((req, i) => (
-                <li key={i} className="flex gap-2 text-sm text-red-700">
-                  <span className="shrink-0 mt-0.5"><AlertCircle size={16} /></span>
+                <li key={i} className="flex gap-2 text-xs text-red-300 font-medium">
+                  <span className="shrink-0 mt-0.5"><AlertCircle size={14} className="text-red-400" /></span>
                   {req.requisito}
                 </li>
               ))}
@@ -91,7 +91,7 @@ export default function GapAnalysisSection({ bandoId, profileId }: GapAnalysisSe
           </div>
           
           <div className="pt-2">
-            <Button variant="secondary" onClick={() => router.push('/bandi')}>
+            <Button variant="secondary" onClick={() => router.push('/bandi')} className="text-xs">
               Torna ai bandi compatibili
             </Button>
           </div>
@@ -103,23 +103,23 @@ export default function GapAnalysisSection({ bandoId, profileId }: GapAnalysisSe
     const isGood = score_ammissibilita >= 60;
     
     return (
-      <div className={`rounded-2xl p-6 border flex flex-col gap-6 ${isGood ? 'bg-emerald-50 border-emerald-100' : 'bg-yellow-50 border-yellow-100'}`}>
+      <div className={`rounded-2xl p-6 border flex flex-col gap-6 ${isGood ? 'bg-emerald-950/10 border-emerald-900/20 text-emerald-300' : 'bg-amber-950/10 border-amber-900/20 text-amber-300'}`}>
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
             {isGood ? (
-              <CheckCircle2 size={24} className="text-[#1A7A4A]" />
+              <CheckCircle2 size={20} className="text-emerald-400" />
             ) : (
-              <AlertTriangle size={24} className="text-yellow-600" />
+              <AlertTriangle size={20} className="text-amber-400" />
             )}
-            <h2 className={`text-lg font-bold ${isGood ? 'text-[#1A7A4A]' : 'text-yellow-700'}`}>
+            <h2 className={`text-sm font-bold uppercase tracking-wider ${isGood ? 'text-emerald-400' : 'text-amber-400'}`}>
               {isGood ? 'La tua azienda è compatibile' : 'Attenzione — verifica questi requisiti prima di candidarti'}
             </h2>
           </div>
-          <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-lg border border-gray-100">
-            <span className="text-sm font-semibold text-gray-600">Score: {score_ammissibilita}%</span>
-            <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="flex items-center gap-3 bg-zinc-950/50 px-3 py-1.5 rounded-lg border border-zinc-850">
+            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Score: {score_ammissibilita}%</span>
+            <div className="w-20 h-1.5 bg-zinc-900 border border-zinc-850 rounded-full overflow-hidden">
               <div 
-                className={`h-full rounded-full ${score_ammissibilita >= 80 ? 'bg-emerald-500' : score_ammissibilita >= 60 ? 'bg-yellow-400' : 'bg-red-400'}`}
+                className={`h-full rounded-full ${score_ammissibilita >= 80 ? 'bg-emerald-500' : score_ammissibilita >= 60 ? 'bg-amber-500' : 'bg-red-500'}`}
                 style={{ width: `${score_ammissibilita}%` }}
               />
             </div>
@@ -129,11 +129,11 @@ export default function GapAnalysisSection({ bandoId, profileId }: GapAnalysisSe
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {requisiti_soddisfatti?.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 hover:text-gray-900 transition-colors">Requisiti soddisfatti</h3>
+              <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wide mb-3">Requisiti soddisfatti</h3>
               <ul className="space-y-2">
                 {requisiti_soddisfatti.map((req, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-gray-600">
-                    <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
+                  <li key={i} className="flex gap-2 text-xs text-zinc-300 font-medium">
+                    <CheckCircle2 size={14} className="text-emerald-500 shrink-0 mt-0.5" />
                     {req}
                   </li>
                 ))}
@@ -143,18 +143,18 @@ export default function GapAnalysisSection({ bandoId, profileId }: GapAnalysisSe
 
           {requisiti_mancanti?.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 hover:text-gray-900 transition-colors">Da verificare o mancanti</h3>
+              <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wide mb-3">Da verificare o mancanti</h3>
               <ul className="space-y-3">
                 {requisiti_mancanti.map((req, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm">
-                    <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded shrink-0 mt-0.5 ${
-                      req.priorita === 'bloccante' ? 'bg-red-100 text-red-700' : 
-                      req.priorita === 'importante' ? 'bg-yellow-100 text-yellow-700' : 
-                      'bg-gray-200 text-gray-700'
+                  <li key={i} className="flex items-start gap-2 text-xs font-medium">
+                    <span className={`px-2 py-0.5 text-[9px] font-bold uppercase rounded shrink-0 mt-0.5 ${
+                      req.priorita === 'bloccante' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
+                      req.priorita === 'importante' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 
+                      'bg-zinc-800 text-zinc-400 border border-zinc-750'
                     }`}>
                       {req.priorita}
                     </span>
-                    <span className="text-gray-700">{req.requisito}</span>
+                    <span className="text-zinc-300">{req.requisito}</span>
                   </li>
                 ))}
               </ul>
@@ -162,18 +162,18 @@ export default function GapAnalysisSection({ bandoId, profileId }: GapAnalysisSe
           )}
         </div>
 
-        <div className="flex flex-wrap gap-3 pt-4 border-t border-black/5">
+        <div className="flex flex-wrap gap-3 pt-4 border-t border-zinc-900 justify-end">
           {isGood ? (
-            <Button onClick={handleProceed} className="gap-2">
-              Procedi con il pacchetto completo <ArrowRight size={16} />
+            <Button onClick={handleProceed} className="gap-2 text-xs font-bold">
+              Procedi con il pacchetto completo <ArrowRight size={14} />
             </Button>
           ) : (
             <>
-              <Button onClick={() => router.push('/bandi')} className="bg-yellow-600 hover:bg-yellow-700 text-white">
+              <Button onClick={() => router.push('/bandi')} className="bg-amber-500 text-zinc-950 hover:bg-amber-400 text-xs font-bold">
                 Torna ai bandi
               </Button>
-              <Button onClick={handleProceed} variant="secondary">
-                Procedi comunque <ArrowRight size={16} />
+              <Button onClick={handleProceed} variant="secondary" className="text-xs">
+                Procedi comunque <ArrowRight size={14} />
               </Button>
             </>
           )}

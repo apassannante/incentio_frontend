@@ -6,7 +6,7 @@ import { CheckCircle2, Circle, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { fetchAuth } from '@/lib/fetchAuth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 const STEPS = [
   'Visura caricata',
@@ -117,12 +117,12 @@ export default function LoadingContent() {
   }, [sessionId]);
 
   return (
-    <div className="min-h-screen bg-[#0A0F1E] text-white flex flex-col">
-      <header className="sticky top-0 z-50 bg-[#0A0F1E]/90 backdrop-blur border-b border-[#38BDF8]/15 px-6 py-4">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col">
+      <header className="sticky top-0 z-50 bg-[#09090b]/80 backdrop-blur border-b border-zinc-800 px-6 py-4">
         <div className="max-w-5xl mx-auto">
           <Link href="/" className="text-xl">
             <span className="font-extrabold text-white">Incent</span>
-            <span className="font-extrabold text-[#38BDF8]">io</span>
+            <span className="font-extrabold text-zinc-400">io</span>
           </Link>
         </div>
       </header>
@@ -130,11 +130,11 @@ export default function LoadingContent() {
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-16">
         <div className="w-full max-w-md">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#38BDF8]/10 mb-4">
-              <Loader2 size={32} className="text-[#38BDF8] animate-spin" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 mb-4 animate-pulse">
+              <Loader2 size={32} className="text-zinc-400 animate-spin" />
             </div>
             <h1 className="text-2xl font-extrabold text-white mb-2">Analisi in corso…</h1>
-            <p className="text-white/50 text-sm">
+            <p className="text-zinc-400 text-sm">
               Stiamo elaborando la tua visura e cercando i bandi più compatibili.
             </p>
           </div>
@@ -148,27 +148,27 @@ export default function LoadingContent() {
                 <div
                   key={i}
                   className={`flex items-center gap-4 p-4 rounded-xl border transition-all duration-300
-                    ${done ? 'border-[#38BDF8]/30 bg-[#38BDF8]/5' : ''}
-                    ${active ? 'border-[#38BDF8]/50 bg-[#38BDF8]/10' : ''}
-                    ${!done && !active ? 'border-white/10 bg-white/2' : ''}`}
+                    ${done ? 'border-zinc-800 bg-zinc-900/20' : ''}
+                    ${active ? 'border-zinc-700 bg-zinc-900/50' : ''}
+                    ${!done && !active ? 'border-zinc-900/50 bg-zinc-950/10' : ''}`}
                 >
                   <div className="shrink-0">
                     {done ? (
-                      <CheckCircle2 size={24} className="text-[#38BDF8]" />
+                      <CheckCircle2 size={24} className="text-zinc-200" />
                     ) : active ? (
-                      <Loader2 size={24} className="text-[#38BDF8] animate-spin" />
+                      <Loader2 size={24} className="text-zinc-400 animate-spin" />
                     ) : (
-                      <Circle size={24} className="text-white/20" />
+                      <Circle size={24} className="text-zinc-800" />
                     )}
                   </div>
-                  <span className={`text-sm font-medium transition-colors ${done || active ? 'text-white' : 'text-white/30'}`}>
+                  <span className={`text-sm font-medium transition-colors ${done || active ? 'text-zinc-100' : 'text-zinc-600'}`}>
                     {label}
                   </span>
                   {done && (
-                    <span className="ml-auto text-xs text-[#38BDF8] font-semibold">Completato</span>
+                    <span className="ml-auto text-xs text-zinc-400 font-semibold">Completato</span>
                   )}
                   {active && (
-                    <span className="ml-auto text-xs text-[#38BDF8]/60 font-medium">In corso…</span>
+                    <span className="ml-auto text-xs text-zinc-500 font-medium">In corso…</span>
                   )}
                 </div>
               );
@@ -176,7 +176,7 @@ export default function LoadingContent() {
           </div>
 
           {error && (
-            <div className="mt-6 flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+            <div className="mt-6 flex items-start gap-3 bg-red-950/20 border border-red-900/30 rounded-xl p-4">
               <AlertCircle size={18} className="text-red-400 mt-0.5 shrink-0" />
               <div>
                 <p className="text-red-300 text-sm font-semibold">Errore</p>
@@ -184,14 +184,14 @@ export default function LoadingContent() {
               </div>
               <Link
                 href="/visura/upload"
-                className="ml-auto shrink-0 text-xs font-bold text-[#38BDF8] hover:underline"
+                className="ml-auto shrink-0 text-xs font-bold text-zinc-100 hover:text-white hover:underline"
               >
                 Riprova
               </Link>
             </div>
           )}
 
-          <p className="text-center text-xs text-white/25 mt-8">
+          <p className="text-center text-xs text-zinc-600 mt-8">
             L&apos;analisi può richiedere da 30 secondi a qualche minuto.
           </p>
         </div>

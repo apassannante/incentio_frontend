@@ -9,19 +9,19 @@ export const metadata = {
 
 export default function ProfiloPage() {
     return (
-        <div className="min-h-screen bg-[#0A0F1E] text-white">
+        <div className="min-h-screen bg-[#09090b] text-zinc-100 font-sans">
             {/* Header */}
-            <header className="sticky top-0 z-50 bg-[#0A0F1E]/90 backdrop-blur border-b border-[#38BDF8]/20 px-6 py-4">
+            <header className="sticky top-0 z-50 bg-[#09090b]/80 backdrop-blur border-b border-zinc-900 px-6 py-4">
                 <div className="max-w-5xl mx-auto flex items-center gap-4">
                     <Link
                         href="/"
-                        className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#38BDF8] transition-colors"
+                        className="flex items-center gap-1.5 text-xs font-semibold text-zinc-450 text-zinc-400 hover:text-white transition-colors"
                     >
-                        <ArrowLeft size={16} />
+                        <ArrowLeft size={14} />
                         Home
                     </Link>
-                    <span className="text-xl font-bold text-white">
-                        Incent<span className="text-[#38BDF8]">io</span>
+                    <span className="text-sm font-semibold tracking-tight text-white">
+                        Incentio
                     </span>
                 </div>
             </header>
@@ -29,8 +29,8 @@ export default function ProfiloPage() {
             {/* Content */}
             <div className="max-w-5xl mx-auto px-6 py-12">
                 <div className="text-center mb-10">
-                    <h1 className="text-3xl font-bold text-white">Descrivi la tua azienda</h1>
-                    <p className="text-gray-400 mt-2">
+                    <h1 className="text-2xl font-bold text-white">Descrivi la tua azienda</h1>
+                    <p className="text-xs text-zinc-400 mt-2">
                         In 2 minuti troviamo i bandi più adatti al tuo profilo
                     </p>
                 </div>

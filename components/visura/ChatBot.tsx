@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Bot, Send, X } from 'lucide-react';
 import { fetchAuth } from '@/lib/fetchAuth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -77,15 +77,15 @@ export default function ChatBot({ sessionId }: ChatBotProps) {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-[#0D1829] border-r border-white/10">
+    <div className="flex flex-col h-full min-h-0 bg-[#09090b] border-r border-zinc-800">
       {/* Header */}
-      <div className="shrink-0 px-4 py-4 border-b border-white/10 flex items-start gap-3">
-        <div className="w-9 h-9 rounded-xl bg-[#38BDF8]/10 flex items-center justify-center shrink-0">
-          <Bot size={18} className="text-[#38BDF8]" />
+      <div className="shrink-0 px-4 py-4 border-b border-zinc-800 flex items-start gap-3">
+        <div className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0">
+          <Bot size={18} className="text-zinc-400" />
         </div>
         <div>
           <p className="text-sm font-bold text-white">Consulente Incentio</p>
-          <p className="text-xs text-white/40">Basato sulla tua visura</p>
+          <p className="text-xs text-zinc-500">Basato sulla tua visura</p>
         </div>
       </div>
 
@@ -93,7 +93,7 @@ export default function ChatBot({ sessionId }: ChatBotProps) {
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 min-h-0">
         {messages.length === 0 && !loading && (
           <div className="text-center py-6">
-            <p className="text-white/30 text-xs">
+            <p className="text-zinc-500 text-xs">
               Chiedimi qualsiasi cosa sui tuoi bandi e sulla tua visura.
             </p>
           </div>
@@ -107,8 +107,8 @@ export default function ChatBot({ sessionId }: ChatBotProps) {
             <div
               className={`max-w-[85%] rounded-xl px-3 py-2.5 text-sm leading-relaxed
                 ${msg.role === 'user'
-                  ? 'bg-[#38BDF8] text-[#0A0F1E] font-medium rounded-br-sm'
-                  : 'bg-white/8 text-white/90 rounded-bl-sm border border-white/10'
+                  ? 'bg-zinc-100 text-zinc-950 font-medium rounded-br-sm'
+                  : 'bg-zinc-900/50 text-zinc-100 rounded-bl-sm border border-zinc-800'
                 }`}
             >
               {msg.role === 'assistant' ? (
@@ -125,10 +125,10 @@ export default function ChatBot({ sessionId }: ChatBotProps) {
         {/* Typing indicator */}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-white/8 border border-white/10 rounded-xl rounded-bl-sm px-4 py-3 flex gap-1 items-center">
-              <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce [animation-delay:0ms]" />
-              <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce [animation-delay:150ms]" />
-              <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce [animation-delay:300ms]" />
+            <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl rounded-bl-sm px-4 py-3 flex gap-1 items-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 animate-bounce [animation-delay:0ms]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 animate-bounce [animation-delay:150ms]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 animate-bounce [animation-delay:300ms]" />
             </div>
           </div>
         )}
@@ -139,20 +139,20 @@ export default function ChatBot({ sessionId }: ChatBotProps) {
       {/* Quick chips */}
       {chipsVisible && messages.length === 0 && (
         <div className="shrink-0 px-4 pb-3 flex flex-col gap-2">
-          <p className="text-xs text-white/30 mb-1">Domande rapide:</p>
+          <p className="text-xs text-zinc-500 mb-1">Domande rapide:</p>
           {QUICK_CHIPS.map((chip, i) => (
             <button
               key={i}
               onClick={() => sendMessage(chip)}
               disabled={loading}
-              className="text-left text-xs px-3 py-2 rounded-lg bg-white/5 hover:bg-[#38BDF8]/10 border border-white/10 hover:border-[#38BDF8]/30 text-white/70 hover:text-white transition-all"
+              className="text-left text-xs px-3 py-2 rounded-lg bg-zinc-900/30 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200 transition-all"
             >
               {chip}
             </button>
           ))}
           <button
             onClick={() => setChipsVisible(false)}
-            className="flex items-center gap-1 text-xs text-white/25 hover:text-white/50 transition-colors self-end mt-0.5"
+            className="flex items-center gap-1 text-xs text-zinc-600 hover:text-zinc-400 transition-colors self-end mt-0.5"
           >
             <X size={12} /> Chiudi
           </button>
@@ -160,7 +160,7 @@ export default function ChatBot({ sessionId }: ChatBotProps) {
       )}
 
       {/* Input */}
-      <div className="shrink-0 px-4 pb-4 pt-2 border-t border-white/10">
+      <div className="shrink-0 px-4 pb-4 pt-2 border-t border-zinc-800">
         <div className="flex gap-2 items-end">
           <textarea
             ref={textareaRef}
@@ -170,21 +170,21 @@ export default function ChatBot({ sessionId }: ChatBotProps) {
             onKeyDown={onKeyDown}
             placeholder="Scrivi un messaggio…"
             disabled={loading}
-            className="flex-1 resize-none rounded-xl bg-white/5 border border-white/15 focus:border-[#38BDF8]/50 text-white text-sm px-3 py-2.5 placeholder:text-white/25 outline-none focus:ring-0 transition-colors disabled:opacity-50"
+            className="flex-1 resize-none rounded-xl bg-zinc-900/50 border border-zinc-800 focus:border-zinc-700 text-zinc-100 text-sm px-3 py-2.5 placeholder:text-zinc-600 outline-none focus:ring-0 transition-colors disabled:opacity-50"
           />
           <button
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || loading}
             className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all
               ${input.trim() && !loading
-                ? 'bg-[#38BDF8] text-[#0A0F1E] hover:opacity-90 shadow-lg shadow-[#38BDF8]/20'
-                : 'bg-white/10 text-white/20 cursor-not-allowed'
+                ? 'bg-zinc-100 text-zinc-950 hover:bg-zinc-200'
+                : 'bg-zinc-900 text-zinc-700 border border-zinc-800 cursor-not-allowed'
               }`}
           >
             <Send size={16} />
           </button>
         </div>
-        <p className="text-xs text-white/20 mt-1.5">Enter per inviare · Shift+Enter per nuova riga</p>
+        <p className="text-xs text-zinc-600 mt-1.5">Enter per inviare · Shift+Enter per nuova riga</p>
       </div>
     </div>
   );
