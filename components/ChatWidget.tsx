@@ -137,7 +137,7 @@ export default function ChatWidget() {
                             ? {
                                 ...m,
                                 content:
-                                    'Ops, si è verificato un errore. Assicurati che il backend sia attivo su localhost:3001.',
+                                    'Ops, si è verificato un errore. Riprova tra qualche secondo.',
                                 streaming: false,
                             }
                             : m
